@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Linked List</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(144, 205, 244, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(144, 205, 244, 0.2);
+        }
+
+        button {
+            background: var(--accent-blue);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(144, 205, 244, 0.3);
+        }
+
+        button:hover {
+            background: #63b3ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(144, 205, 244, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-purple);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(214, 188, 250, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Linked List Specific Styles */
+        .list-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 100px;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 300px;
+        }
+
+        .list-node {
+            width: 120px;
+            min-height: 120px;
+            border-radius: 8px;
+            background: var(--accent-blue);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(144, 205, 244, 0.4);
+            transition: all 0.3s;
+            padding: 10px;
+        }
+
+        .list-node.highlighted {
+            background: var(--accent-yellow);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(250, 240, 137, 0.5);
+        }
+
+        .list-node.visited {
+            background: var(--accent-green);
+        }
+
+        .list-node.selected {
+            background: var(--accent-purple);
+        }
+
+        .list-node .value {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .list-node .index {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .list-node .address {
+            font-size: 9px;
+            opacity: 0.9;
+            text-align: center;
+            line-height: 1.3;
+            margin-top: 5px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .list-arrow {
+            position: relative;
+            width: 40px;
+            height: 2px;
+            background: var(--accent-cyan);
+        }
+
+        .list-arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 7px solid transparent;
+            border-bottom: 7px transparent;
+            border-left: 14px solid var(--accent-cyan);
+        }
+
+        .list-arrow.highlighted {
+            background: var(--accent-yellow);
+        }
+
+        .list-arrow.highlighted::after {
+            border-left-color: var(--accent-yellow);
+        }
+
+        .list-arrow.prev {
+            transform: rotate(180deg);
+        }
+
+        .head-pointer, .tail-pointer {
+            position: absolute;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--accent-red);
+            padding: 2px 6px;
+            background: rgba(254, 178, 178, 0.2);
+            border-radius: 4px;
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .head-pointer {
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .tail-pointer {
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .null-node {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-weight: bold;
+            font-style: italic;
+            font-size: 12px;
+            padding: 5px;
+            text-align: center;
+        }
+
+        .circular-connector {
+            position: absolute;
+            width: 80px;
+            height: 50px;
+            border: 2px dashed var(--accent-pink);
+            border-radius: 50%;
+            top: -60px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .address-display {
+            position: absolute;
+            font-size: 9px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2px 4px;
+            border-radius: 3px;
+            border: 1px solid var(--border-light);
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .list-container {
+                gap: 15px;
+            }
+            .list-node {
+                width: 100px;
+                min-height: 100px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .control-row {
+                flex-direction: column;
+            }
+            .list-node {
+                width: 90px;
+                min-height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" fill="none"/>
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Linked List</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">List Type</div>
+                <select id="listType">
+                    <option value="singly">Singly Linked List</option>
+                    <option value="doubly">Doubly Linked List</option>
+                    <option value="circular">Circular Linked List</option>
+                    <option value="doubly-circular">Doubly Circular Linked List</option>
+                </select>
+            </div>
+
+            <div class="section">
+                <div class="section-title">List Operations</div>
+                <div class="control-row">
+                    <input type="text" id="insertValue" placeholder="Value to insert">
+                    <button id="insertHeadBtn">Insert at Head</button>
+                </div>
+                <div class="control-row">
+                    <input type="text" id="appendValue" placeholder="Value to append">
+                    <button id="appendBtn">Append at Tail</button>
+                </div>
+                <div class="control-row">
+                    <input type="number" id="positionInput" placeholder="Position (0-indexed)">
+                    <button id="insertAtBtn">Insert at Position</button>
+                </div>
+                <div class="control-row">
+                    <input type="text" id="searchValue" placeholder="Value to search">
+                    <button id="searchBtn" class="ghost">Search</button>
+                </div>
+                <div class="button-group">
+                    <button id="deleteHeadBtn">Delete Head</button>
+                    <button id="deleteTailBtn" class="ghost">Delete Tail</button>
+                </div>
+                <div class="button-group">
+                    <button id="reverseBtn">Reverse List</button>
+                    <button id="clearBtn" class="ghost">Clear List</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Traversal</div>
+                <select id="traversalSelect">
+                    <option value="">Select Traversal</option>
+                    <option value="forward">Forward Traversal</option>
+                    <option value="backward">Backward Traversal (Doubly)</option>
+                </select>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="traverseBtn">Run Traversal</button>
+                    <button id="stepBtn" class="ghost">Step</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Speed:</label>
+                    <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">List Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Linked List: Linear collection of nodes. Each node contains data and reference to next node.
+                </div>
+                <div id="complexityText" style="font-size: 0.8rem; color: var(--accent-blue); margin-top: 8px; font-weight: 600;">
+                    Access: O(n) | Insert/Delete: O(1) at head/tail
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    <div id="listStats">Nodes: 0 | Head: null | Tail: null</div>
+                    <div id="listTypeInfo">Type: Singly Linked List</div>
+                    <div id="memoryInfo">Memory Addresses: Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Linked List Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="selectedNode">Selected: None</span> | 
+                    <span id="operationStatus">Ready</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue);"></div>
+                        <span>Normal Node</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Current/Highlighted</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Visited</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Selected/Processing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Head/Tail Pointer</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-pink); border: 2px dashed var(--accent-pink);"></div>
+                        <span>Circular Connection</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Use controls to manipulate the linked list. Click nodes to select.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            listType: 'singly',
+            head: null,
+            tail: null,
+            size: 0,
+            selectedNode: null,
+            highlightedNodes: new Set(),
+            visitedNodes: new Set(),
+            isAnimating: false,
+            speed: 300,
+            memoryAddresses: {},
+            nextAddress: 1000,
+            isDoubly: false,
+            isCircular: false
+        };
+
+        class ListNode {
+            constructor(value) {
+                this.value = value;
+                this.next = null;
+                this.prev = null;
+                this.id = Math.random().toString(36).substr(2, 9);
+                this.isHead = false;
+                this.isTail = false;
+                this.index = 0;
+                this.memoryAddress = null;
+            }
+        }
+
+        const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const infoText = document.getElementById('infoText');
+        const complexityText = document.getElementById('complexityText');
+        const listStats = document.getElementById('listStats');
+        const listTypeInfo = document.getElementById('listTypeInfo');
+        const selectedNode = document.getElementById('selectedNode');
+        const operationStatus = document.getElementById('operationStatus');
+        const memoryInfo = document.getElementById('memoryInfo');
+
+        function init() {
+            setupEventListeners();
+            initializeList();
+            render();
+            updateInfo();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('listType').addEventListener('change', function() {
+                state.listType = this.value;
+                state.isDoubly = this.value === 'doubly' || this.value === 'doubly-circular';
+                state.isCircular = this.value === 'circular' || this.value === 'doubly-circular';
+                clearList();
+                updateInfo();
+                createDummyList();
+                render();
+            });
+            
+            document.getElementById('insertHeadBtn').addEventListener('click', insertAtHead);
+            document.getElementById('appendBtn').addEventListener('click', appendAtTail);
+            document.getElementById('insertAtBtn').addEventListener('click', insertAtPosition);
+            document.getElementById('searchBtn').addEventListener('click', searchValue);
+            document.getElementById('deleteHeadBtn').addEventListener('click', deleteHead);
+            document.getElementById('deleteTailBtn').addEventListener('click', deleteTail);
+            document.getElementById('reverseBtn').addEventListener('click', reverseList);
+            document.getElementById('clearBtn').addEventListener('click', clearList);
+            document.getElementById('traverseBtn').addEventListener('click', traverseList);
+            document.getElementById('stepBtn').addEventListener('click', stepTraversal);
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                state.speed = parseInt(this.value);
+            });
+            
+            document.getElementById('insertValue').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') insertAtHead();
+            });
+            
+            document.getElementById('appendValue').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') appendAtTail();
+            });
+        }
+
+        function generateMemoryAddress() {
+            const address = `0x${state.nextAddress.toString(16).toUpperCase().padStart(4, '0')}`;
+            state.nextAddress += 16;
+            return address;
+        }
+
+        function initializeList() {
+            clearList();
+            createDummyList();
+            updateStats();
+        }
+
+        function createDummyList() {
+            clearList();
+            
+            // Create dummy nodes based on list type
+            const dummyValues = ['A', 'B', 'C', 'D', 'E'];
+            
+            dummyValues.forEach(value => {
+                const newNode = new ListNode(value);
+                newNode.memoryAddress = generateMemoryAddress();
+                
+                if (!state.head) {
+                    // First node
+                    state.head = newNode;
+                    state.tail = newNode;
+                    newNode.isHead = true;
+                    newNode.isTail = true;
+                    
+                    // Handle circular connections
+                    if (state.isCircular) {
+                        newNode.next = newNode;
+                        if (state.isDoubly) {
+                            newNode.prev = newNode;
+                        }
+                    }
+                } else {
+                    // Append to tail
+                    state.tail.isTail = false;
+                    state.tail.next = newNode;
+                    
+                    if (state.isDoubly) {
+                        newNode.prev = state.tail;
+                    }
+                    
+                    state.tail = newNode;
+                    state.tail.isTail = true;
+                    
+                    // Handle circular connections
+                    if (state.isCircular) {
+                        state.tail.next = state.head;
+                        if (state.isDoubly) {
+                            state.head.prev = state.tail;
+                        }
+                    }
+                }
+                
+                state.size++;
+            });
+            
+            updateIndexes();
+            updateStats();
+            
+            updateStatus(`Created dummy ${getListTypeName()} with ${dummyValues.length} nodes`);
+            updateAction('Created dummy list');
+        }
+
+        function insertAtHead() {
+            const valueInput = document.getElementById('insertValue');
+            const value = valueInput.value.trim();
+            
+            if (!value) {
+                updateStatus('Please enter a value to insert');
+                return;
+            }
+            
+            const newNode = new ListNode(value);
+            newNode.memoryAddress = generateMemoryAddress();
+            
+            if (!state.head) {
+                // First node
+                state.head = newNode;
+                state.tail = newNode;
+                newNode.isHead = true;
+                newNode.isTail = true;
+                
+                // Handle circular connections
+                if (state.isCircular) {
+                    newNode.next = newNode;
+                    if (state.isDoubly) {
+                        newNode.prev = newNode;
+                    }
+                }
+            } else {
+                // Insert before current head
+                newNode.next = state.head;
+                
+                if (state.isDoubly) {
+                    state.head.prev = newNode;
+                    if (state.isCircular) {
+                        newNode.prev = state.tail;
+                        state.tail.next = newNode;
+                    }
+                }
+                
+                // Update head
+                state.head.isHead = false;
+                state.head = newNode;
+                state.head.isHead = true;
+                
+                // Handle circular singly linked list
+                if (state.isCircular && !state.isDoubly) {
+                    state.tail.next = state.head;
+                }
+            }
+            
+            state.size++;
+            updateIndexes();
+            updateStats();
+            
+            state.highlightedNodes.clear();
+            state.highlightedNodes.add(newNode.id);
+            
+            render();
+            updateStatus(`Inserted ${value} at head`);
+            updateAction(`Inserted ${value} at head`);
+            
+            valueInput.value = '';
+            valueInput.focus();
+        }
+
+        function appendAtTail(initialValue = null, isInitializing = false) {
+            let value;
+            if (isInitializing) {
+                value = initialValue;
+            } else {
+                const valueInput = document.getElementById('appendValue');
+                value = valueInput.value.trim();
+                
+                if (!value) {
+                    updateStatus('Please enter a value to append');
+                    return;
+                }
+            }
+            
+            const newNode = new ListNode(value);
+            newNode.memoryAddress = generateMemoryAddress();
+            
+            if (!state.head) {
+                // First node
+                state.head = newNode;
+                state.tail = newNode;
+                newNode.isHead = true;
+                newNode.isTail = true;
+                
+                // Handle circular connections
+                if (state.isCircular) {
+                    newNode.next = newNode;
+                    if (state.isDoubly) {
+                        newNode.prev = newNode;
+                    }
+                }
+            } else {
+                // Append after current tail
+                state.tail.isTail = false;
+                state.tail.next = newNode;
+                
+                if (state.isDoubly) {
+                    newNode.prev = state.tail;
+                }
+                
+                // Update tail
+                state.tail = newNode;
+                state.tail.isTail = true;
+                
+                // Handle circular connections
+                if (state.isCircular) {
+                    state.tail.next = state.head;
+                    if (state.isDoubly) {
+                        state.head.prev = state.tail;
+                    }
+                }
+            }
+            
+            state.size++;
+            updateIndexes();
+            updateStats();
+            
+            if (!isInitializing) {
+                state.highlightedNodes.clear();
+                state.highlightedNodes.add(newNode.id);
+                
+                render();
+                updateStatus(`Appended ${value} at tail`);
+                updateAction(`Appended ${value} at tail`);
+                
+                document.getElementById('appendValue').value = '';
+                document.getElementById('appendValue').focus();
+            }
+        }
+
+        function insertAtPosition() {
+            const valueInput = document.getElementById('insertValue');
+            const positionInput = document.getElementById('positionInput');
+            
+            const value = valueInput.value.trim();
+            const position = parseInt(positionInput.value);
+            
+            if (!value) {
+                updateStatus('Please enter a value to insert');
+                return;
+            }
+            
+            if (isNaN(position) || position < 0 || position > state.size) {
+                updateStatus(`Please enter a valid position (0-${state.size})`);
+                return;
+            }
+            
+            if (position === 0) {
+                insertAtHead();
+                return;
+            }
+            
+            if (position === state.size) {
+                appendAtTail(value, false);
+                return;
+            }
+            
+            const newNode = new ListNode(value);
+            newNode.memoryAddress = generateMemoryAddress();
+            
+            let current = state.head;
+            let count = 0;
+            
+            // Traverse to position-1
+            while (current && count < position - 1) {
+                current = current.next;
+                count++;
+            }
+            
+            if (!current) {
+                updateStatus('Invalid position');
+                return;
+            }
+            
+            // Insert after current node
+            newNode.next = current.next;
+            if (state.isDoubly) {
+                newNode.prev = current;
+                if (current.next) {
+                    current.next.prev = newNode;
+                }
+            }
+            current.next = newNode;
+            
+            state.size++;
+            updateIndexes();
+            updateStats();
+            
+            state.highlightedNodes.clear();
+            state.highlightedNodes.add(newNode.id);
+            
+            render();
+            updateStatus(`Inserted ${value} at position ${position}`);
+            updateAction(`Inserted ${value} at position ${position}`);
+            
+            valueInput.value = '';
+            positionInput.value = '';
+            valueInput.focus();
+        }
+
+        async function searchValue() {
+            const valueInput = document.getElementById('searchValue');
+            const value = valueInput.value.trim();
+            
+            if (!value) {
+                updateStatus('Please enter a value to search');
+                return;
+            }
+            
+            if (state.isAnimating) return;
+            
+            state.isAnimating = true;
+            state.highlightedNodes.clear();
+            state.visitedNodes.clear();
+            
+            let current = state.head;
+            let found = false;
+            let position = 0;
+            
+            if (!current) {
+                updateStatus('List is empty');
+                state.isAnimating = false;
+                return;
+            }
+            
+            updateStatus(`Searching for value: ${value}...`);
+            operationStatus.textContent = 'Searching';
+            
+            do {
+                if (!current) break;
+                
+                state.highlightedNodes.clear();
+                state.highlightedNodes.add(current.id);
+                state.visitedNodes.add(current.id);
+                render();
+                await sleep(state.speed);
+                
+                if (current.value == value) {
+                    found = true;
+                    break;
+                }
+                
+                current = current.next;
+                position++;
+                
+                // Break conditions
+                if (position >= state.size) break;
+                if (state.isCircular && current === state.head) break;
+                if (!state.isCircular && !current) break;
+                
+            } while (current && (state.isCircular ? current !== state.head : true));
+            
+            state.highlightedNodes.clear();
+            render();
+            
+            if (found) {
+                updateStatus(`Found value ${value} at position ${position}`);
+                updateAction(`Found value ${value}`);
+            } else {
+                updateStatus(`Value ${value} not found in list`);
+            }
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        function deleteHead() {
+            if (!state.head) {
+                updateStatus('List is empty');
+                return;
+            }
+            
+            const deletedValue = state.head.value;
+            
+            if (state.head === state.tail) {
+                // Only one node
+                state.head = null;
+                state.tail = null;
+            } else {
+                // Multiple nodes
+                const newHead = state.head.next;
+                
+                // Update circular connections
+                if (state.isCircular) {
+                    if (state.isDoubly) {
+                        state.tail.next = newHead;
+                        newHead.prev = state.tail;
+                    } else {
+                        state.tail.next = newHead;
+                    }
+                } else if (state.isDoubly) {
+                    newHead.prev = null;
+                }
+                
+                // Update head
+                state.head = newHead;
+                if (state.head) {
+                    state.head.isHead = true;
+                }
+            }
+            
+            state.size--;
+            updateIndexes();
+            updateStats();
+            
+            render();
+            updateStatus(`Deleted head node with value: ${deletedValue}`);
+            updateAction(`Deleted head node`);
+        }
+
+        function deleteTail() {
+            if (!state.tail) {
+                updateStatus('List is empty');
+                return;
+            }
+            
+            const deletedValue = state.tail.value;
+            
+            if (state.head === state.tail) {
+                // Only one node
+                state.head = null;
+                state.tail = null;
+            } else {
+                if (state.isDoubly) {
+                    // Doubly linked list - easy
+                    const newTail = state.tail.prev;
+                    newTail.next = state.isCircular ? state.head : null;
+                    if (state.isCircular && state.head) {
+                        state.head.prev = newTail;
+                    }
+                    state.tail = newTail;
+                    state.tail.isTail = true;
+                } else {
+                    // Singly linked list - need to traverse
+                    let current = state.head;
+                    while (current.next !== state.tail) {
+                        current = current.next;
+                    }
+                    current.next = state.isCircular ? state.head : null;
+                    state.tail = current;
+                    state.tail.isTail = true;
+                }
+            }
+            
+            state.size--;
+            updateIndexes();
+            updateStats();
+            
+            render();
+            updateStatus(`Deleted tail node with value: ${deletedValue}`);
+            updateAction(`Deleted tail node`);
+        }
+
+        async function reverseList() {
+            if (!state.head || state.head === state.tail) {
+                updateStatus('List has 0 or 1 node, already reversed');
+                return;
+            }
+            
+            if (state.isAnimating) return;
+            
+            state.isAnimating = true;
+            updateStatus('Reversing linked list...');
+            operationStatus.textContent = 'Reversing';
+            
+            let prev = null;
+            let current = state.head;
+            let next = null;
+            
+            // Store old tail to update later
+            const oldTail = state.tail;
+            
+            while (current) {
+                state.highlightedNodes.clear();
+                state.highlightedNodes.add(current.id);
+                render();
+                await sleep(state.speed);
+                
+                next = current.next;
+                
+                if (state.isDoubly) {
+                    // For doubly linked lists, swap next and prev
+                    const tempNext = current.next;
+                    current.next = current.prev;
+                    current.prev = tempNext;
+                } else {
+                    // For singly linked lists
+                    current.next = prev;
+                }
+                
+                prev = current;
+                current = next;
+                
+                // Break conditions for circular lists
+                if (state.isCircular && current === state.head) break;
+                if (!state.isCircular && !current) break;
+            }
+            
+            // Swap head and tail
+            const temp = state.head;
+            state.head = oldTail;
+            state.tail = temp;
+            
+            // Update flags
+            if (state.head) {
+                state.head.isHead = true;
+                state.head.isTail = false;
+            }
+            if (state.tail) {
+                state.tail.isTail = true;
+                state.tail.isHead = false;
+            }
+            
+            // Fix circular connections
+            if (state.isCircular) {
+                state.tail.next = state.head;
+                if (state.isDoubly) {
+                    state.head.prev = state.tail;
+                }
+            }
+            
+            updateIndexes();
+            updateStats();
+            state.highlightedNodes.clear();
+            render();
+            
+            updateStatus('Linked list reversed');
+            updateAction('Reversed list');
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        function clearList() {
+            state.head = null;
+            state.tail = null;
+            state.size = 0;
+            state.selectedNode = null;
+            state.highlightedNodes.clear();
+            state.visitedNodes.clear();
+            state.nextAddress = 1000;
+            
+            updateStats();
+            render();
+            
+            updateStatus('Linked list cleared');
+            updateAction('Cleared list');
+        }
+
+        async function traverseList() {
+            if (state.isAnimating) return;
+            
+            const traversalType = document.getElementById('traversalSelect').value;
+            if (!traversalType) {
+                updateStatus('Please select a traversal type');
+                return;
+            }
+            
+            if (!state.head) {
+                updateStatus('List is empty');
+                return;
+            }
+            
+            state.isAnimating = true;
+            state.highlightedNodes.clear();
+            state.visitedNodes.clear();
+            
+            updateStatus(`Running ${traversalType} traversal...`);
+            operationStatus.textContent = 'Traversing';
+            
+            let current, count, maxSteps;
+            
+            switch(traversalType) {
+                case 'forward':
+                    current = state.head;
+                    count = 0;
+                    maxSteps = state.size;
+                    
+                    while (current && count < maxSteps) {
+                        state.highlightedNodes.clear();
+                        state.highlightedNodes.add(current.id);
+                        state.visitedNodes.add(current.id);
+                        render();
+                        await sleep(state.speed);
+                        
+                        current = current.next;
+                        count++;
+                    }
+                    break;
+                    
+                case 'backward':
+                    if (!state.isDoubly) {
+                        updateStatus('Backward traversal only available for doubly linked lists');
+                        state.isAnimating = false;
+                        return;
+                    }
+                    
+                    current = state.tail;
+                    count = 0;
+                    maxSteps = state.size;
+                    
+                    while (current && count < maxSteps) {
+                        state.highlightedNodes.clear();
+                        state.highlightedNodes.add(current.id);
+                        state.visitedNodes.add(current.id);
+                        render();
+                        await sleep(state.speed);
+                        
+                        current = current.prev;
+                        count++;
+                    }
+                    break;
+                           
+            }
+            
+            state.highlightedNodes.clear();
+            render();
+            
+            updateStatus(`${traversalType.charAt(0).toUpperCase() + traversalType.slice(1)} traversal completed`);
+            updateAction(`Ran ${traversalType} traversal`);
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        function stepTraversal() {
+            updateStatus('Step-by-step traversal - use Traverse for full animation');
+        }
+
+        function updateIndexes() {
+            let current = state.head;
+            let index = 0;
+            const visited = new Set();
+            
+            if (!current) return;
+            
+            do {
+                if (!current || visited.has(current.id)) break;
+                visited.add(current.id);
+                
+                current.index = index;
+                current = current.next;
+                index++;
+                
+                // Safety break
+                if (index > state.size * 2) break;
+                
+            } while (current && (state.isCircular ? current !== state.head : true));
+        }
+
+        function updateStats() {
+            const headValue = state.head ? state.head.value : 'null';
+            const tailValue = state.tail ? state.tail.value : 'null';
+            listStats.textContent = `Nodes: ${state.size} | Head: ${headValue} | Tail: ${tailValue}`;
+            
+            const typeNames = {
+                'singly': 'Singly Linked List',
+                'doubly': 'Doubly Linked List',
+                'circular': 'Circular Linked List',
+                'doubly-circular': 'Doubly Circular Linked List'
+            };
+            listTypeInfo.textContent = `Type: ${typeNames[state.listType]}`;
+            
+            const headAddr = state.head ? state.head.memoryAddress : '0x0000';
+            const tailAddr = state.tail ? state.tail.memoryAddress : '0x0000';
+            memoryInfo.textContent = `Memory: Head=${headAddr}, Tail=${tailAddr}`;
+        }
+
+        function updateInfo() {
+            const typeNames = {
+                'singly': 'Singly Linked List: Each node points to next node. One-way traversal.',
+                'doubly': 'Doubly Linked List: Each node points to both next and previous nodes. Two-way traversal.',
+                'circular': 'Circular Linked List: Last node points to first node. Can traverse infinitely forward.',
+                'doubly-circular': 'Doubly Circular Linked List: Circular list with both next and prev pointers.'
+            };
+            
+            infoText.textContent = typeNames[state.listType] || 'Linked List: Linear collection of nodes.';
+            complexityText.textContent = 'Access: O(n) | Insert/Delete: O(1) at head/tail';
+        }
+
+        function getListTypeName() {
+            const names = {
+                'singly': 'Singly Linked List',
+                'doubly': 'Doubly Linked List',
+                'circular': 'Circular Linked List',
+                'doubly-circular': 'Doubly Circular Linked List'
+            };
+            return names[state.listType] || 'Linked List';
+        }
+
+        function getAddressDisplay(node) {
+            if (!node) return 'NULL';
+            return node.memoryAddress || '0x0000';
+        }
+
+        function render() {
+            canvas.innerHTML = '';
+            
+            const container = document.createElement('div');
+            container.className = 'list-container';
+            
+            if (!state.head) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.textContent = 'List is empty. Add nodes to start.';
+                emptyMsg.style.color = 'var(--text-muted)';
+                emptyMsg.style.fontSize = '1.2rem';
+                emptyMsg.style.marginTop = '100px';
+                container.appendChild(emptyMsg);
+                canvas.appendChild(container);
+                return;
+            }
+            
+            let current = state.head;
+            let count = 0;
+            const visitedNodes = new Set();
+            
+            // Add circular connector visualization
+            if (state.isCircular && state.head && state.tail && state.head !== state.tail) {
+                const circularConnector = document.createElement('div');
+                circularConnector.className = 'circular-connector';
+                circularConnector.style.width = `${Math.min(state.size * 50, 300)}px`;
+                container.appendChild(circularConnector);
+            }
+            
+            do {
+                if (!current || visitedNodes.has(current.id)) break;
+                visitedNodes.add(current.id);
+                
+                // Create node element
+                const nodeElement = document.createElement('div');
+                nodeElement.className = 'list-node';
+                nodeElement.id = `node-${current.id}`;
+                
+                if (state.highlightedNodes.has(current.id)) {
+                    nodeElement.classList.add('highlighted');
+                } else if (state.visitedNodes.has(current.id)) {
+                    nodeElement.classList.add('visited');
+                }
+                
+                if (state.selectedNode && state.selectedNode.id === current.id) {
+                    nodeElement.classList.add('selected');
+                }
+                
+                // Add head/tail pointers
+                if (current.isHead) {
+                    const headPointer = document.createElement('div');
+                    headPointer.className = 'head-pointer';
+                    headPointer.textContent = `HEAD (${getAddressDisplay(current)})`;
+                    nodeElement.appendChild(headPointer);
+                }
+                
+                if (current.isTail) {
+                    const tailPointer = document.createElement('div');
+                    tailPointer.className = 'tail-pointer';
+                    tailPointer.textContent = `TAIL (${getAddressDisplay(current)})`;
+                    nodeElement.appendChild(tailPointer);
+                }
+                
+                // Node content
+                const valueSpan = document.createElement('div');
+                valueSpan.className = 'value';
+                valueSpan.textContent = current.value;
+                nodeElement.appendChild(valueSpan);
+                
+                const indexSpan = document.createElement('div');
+                indexSpan.className = 'index';
+                indexSpan.textContent = `Index: ${current.index}`;
+                nodeElement.appendChild(indexSpan);
+                
+                // Add address section
+                const addressDiv = document.createElement('div');
+                addressDiv.className = 'address';
+                
+                // Memory address
+                addressDiv.innerHTML = `Addr: ${getAddressDisplay(current)}<br>`;
+                
+                // Next pointer
+                const nextAddr = current.next ? getAddressDisplay(current.next) : 'NULL';
+                addressDiv.innerHTML += `Next: ${nextAddr}`;
+                
+                // Prev pointer for doubly linked lists
+                if (state.isDoubly) {
+                    const prevAddr = current.prev ? getAddressDisplay(current.prev) : 'NULL';
+                    addressDiv.innerHTML += `<br>Prev: ${prevAddr}`;
+                }
+                
+                nodeElement.appendChild(addressDiv);
+                
+                // Add prev arrow for doubly linked lists
+                if (state.isDoubly && current.prev && count > 0) {
+                    const prevArrow = document.createElement('div');
+                    prevArrow.className = 'list-arrow prev';
+                    prevArrow.style.marginRight = '10px';
+                    if (state.highlightedNodes.has(current.id) && state.highlightedNodes.has(current.prev.id)) {
+                        prevArrow.classList.add('highlighted');
+                    }
+                    
+                    // Add address label for prev arrow
+                    const prevAddressLabel = document.createElement('div');
+                    prevAddressLabel.className = 'address-display';
+                    prevAddressLabel.textContent = getAddressDisplay(current.prev);
+                    prevAddressLabel.style.top = '-15px';
+                    prevAddressLabel.style.left = '50%';
+                    prevAddressLabel.style.transform = 'translateX(-50%)';
+                    prevArrow.appendChild(prevAddressLabel);
+                    
+                    container.appendChild(prevArrow);
+                }
+                
+                container.appendChild(nodeElement);
+                
+                // Add next arrow if not last node or circular
+                if (current.next && (current !== state.tail || state.isCircular)) {
+                    const arrow = document.createElement('div');
+                    arrow.className = 'list-arrow';
+                    if (state.highlightedNodes.has(current.id) && current.next && state.highlightedNodes.has(current.next.id)) {
+                        arrow.classList.add('highlighted');
+                    }
+                    
+                    // Add address label for next arrow
+                    const nextAddressLabel = document.createElement('div');
+                    nextAddressLabel.className = 'address-display';
+                    nextAddressLabel.textContent = getAddressDisplay(current.next);
+                    nextAddressLabel.style.top = '-15px';
+                    nextAddressLabel.style.left = '50%';
+                    nextAddressLabel.style.transform = 'translateX(-50%)';
+                    arrow.appendChild(nextAddressLabel);
+                    
+                    container.appendChild(arrow);
+                }
+                
+                // Add null indicator for non-circular lists
+                if (!current.next && !state.isCircular && current !== state.tail) {
+                    const nullNode = document.createElement('div');
+                    nullNode.className = 'null-node';
+                    nullNode.textContent = 'NULL';
+                    container.appendChild(nullNode);
+                }
+                
+                current = current.next;
+                count++;
+                
+                // Safety break
+                if (count >= state.size * 2) break;
+                
+            } while (current && (state.isCircular ? current !== state.head : true));
+            
+            canvas.appendChild(container);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

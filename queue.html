@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Queue</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(154, 230, 180, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-green), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-green);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-green);
+            border-radius: 2px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(154, 230, 180, 0.2);
+        }
+
+        button {
+            background: var(--accent-green);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(154, 230, 180, 0.3);
+        }
+
+        button:hover {
+            background: #68d391;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(154, 230, 180, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(144, 205, 244, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Queue Specific Styles */
+        .queue-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 100px;
+            gap: 5px;
+        }
+
+        .queue-element {
+            width: 80px;
+            height: 60px;
+            background: var(--accent-green);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 3px 8px rgba(154, 230, 180, 0.4);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .queue-element.highlighted {
+            background: var(--accent-yellow);
+            transform: scale(1.05);
+            box-shadow: 0 5px 12px rgba(250, 240, 137, 0.5);
+        }
+
+        .queue-element.front {
+            background: var(--accent-red);
+            border: 3px solid var(--accent-yellow);
+        }
+
+        .queue-element.rear {
+            background: var(--accent-blue);
+            border: 3px solid var(--accent-yellow);
+        }
+
+        .queue-element.enqueuing {
+            background: var(--accent-purple);
+            animation: enqueueAnimation 0.5s ease;
+        }
+
+        .queue-element.dequeuing {
+            background: var(--accent-pink);
+            animation: dequeueAnimation 0.5s ease;
+        }
+
+        @keyframes enqueueAnimation {
+            0% { transform: translateX(100px); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes dequeueAnimation {
+            0% { transform: translateX(0); opacity: 1; }
+            100% { transform: translateX(-100px); opacity: 0; }
+        }
+
+        .queue-pointer {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .front-pointer {
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--accent-red);
+        }
+
+        .rear-pointer {
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--accent-blue);
+        }
+
+        .queue-arrow {
+            width: 30px;
+            height: 2px;
+            background: var(--accent-cyan);
+            position: relative;
+        }
+
+        .queue-arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+            border-left: 10px solid var(--accent-cyan);
+        }
+
+        .queue-stats {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .queue-size {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+
+        .queue-front-value {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .queue-rear-value {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .queue-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 40px;
+        }
+
+        .queue-flow {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .flow-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin: 0 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .control-row {
+                flex-direction: column;
+            }
+            .queue-element {
+                width: 60px;
+                height: 50px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" fill="none"/>
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Queue (FIFO)</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Queue Operations</div>
+                <div class="control-row">
+                    <input type="text" id="enqueueValue" placeholder="Value to enqueue">
+                    <button id="enqueueBtn">Enqueue</button>
+                </div>
+                <div class="control-row">
+                    <button id="dequeueBtn">Dequeue</button>
+                    <button id="peekFrontBtn" class="ghost">Peek Front</button>
+                </div>
+                <div class="button-group">
+                    <button id="randomEnqueueBtn">Enqueue Random</button>
+                    <button id="clearQueueBtn" class="ghost">Clear Queue</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Queue Applications</div>
+                <select id="applicationSelect">
+                    <option value="">Select Application</option>
+                    <option value="printer">Printer Queue</option>
+                </select>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="runAppBtn">Run Application</button>
+                    <button id="stepBtn" class="ghost">Step</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Speed:</label>
+                    <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Queue Statistics</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    <div>Queue Size: <span id="queueSize" class="queue-size">0</span></div>
+                    <div>Capacity: <span id="queueCapacity">∞ (dynamic)</span></div>
+                    <div>Front Element: <span id="frontElement" class="queue-front-value">None</span></div>
+                    <div>Rear Element: <span id="rearElement" class="queue-rear-value">None</span></div>
+                    <div>Is Empty: <span id="isEmpty">Yes</span></div>
+                    <div>Operations Count: <span id="opCount">0</span></div>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">Queue Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Queue: FIFO (First In First Out) data structure. Operations: enqueue (add to rear), dequeue (remove from front), peek (view front).
+                </div>
+                <div id="complexityText" style="font-size: 0.8rem; color: var(--accent-green); margin-top: 8px; font-weight: 600;">
+                    Enqueue/Dequeue: O(1) | Space: O(n)
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    <div>✓ First In First Out (FIFO)</div>
+                    <div>✓ Constant time operations</div>
+                    <div>✓ Used in scheduling, buffering</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Queue Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="queueType">Type: Dynamic Array Implementation</span> | 
+                    <span id="operationStatus">Ready</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas">
+                    <div class="queue-diagram">
+                        <div class="queue-flow">
+                            <div class="flow-label">Enqueue →</div>
+                            <div class="queue-arrow"></div>
+                            <div class="flow-label">[QUEUE]</div>
+                            <div class="queue-arrow"></div>
+                            <div class="flow-label">→ Dequeue</div>
+                        </div>
+                    </div>
+                    <div class="queue-stats">
+                        <div id="queueInfo">Enqueue elements at rear, dequeue from front. Queue follows FIFO principle.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Normal Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Front Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue);"></div>
+                        <span>Rear Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Enqueuing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-pink);"></div>
+                        <span>Dequeuing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Highlighted</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Use enqueue to add elements at rear, dequeue to remove from front. Queue follows FIFO.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            queue: [],
+            isAnimating: false,
+            speed: 300,
+            operationsCount: 0,
+            highlightedIndex: -1,
+            frontElement: null,
+            rearElement: null,
+            maxSize: 8 // Visual limit
+        };
+
+        const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const infoText = document.getElementById('infoText');
+        const complexityText = document.getElementById('complexityText');
+        const queueSize = document.getElementById('queueSize');
+        const queueCapacity = document.getElementById('queueCapacity');
+        const frontElement = document.getElementById('frontElement');
+        const rearElement = document.getElementById('rearElement');
+        const isEmpty = document.getElementById('isEmpty');
+        const opCount = document.getElementById('opCount');
+        const operationStatus = document.getElementById('operationStatus');
+        const queueInfo = document.getElementById('queueInfo');
+        const queueType = document.getElementById('queueType');
+
+        function init() {
+            setupEventListeners();
+            initializeQueue();
+            render();
+            updateInfo();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('enqueueBtn').addEventListener('click', enqueue);
+            document.getElementById('dequeueBtn').addEventListener('click', dequeue);
+            document.getElementById('peekFrontBtn').addEventListener('click', peekFront);
+            document.getElementById('randomEnqueueBtn').addEventListener('click', enqueueRandom);
+            document.getElementById('clearQueueBtn').addEventListener('click', clearQueue);
+            document.getElementById('runAppBtn').addEventListener('click', runApplication);
+            document.getElementById('stepBtn').addEventListener('click', stepApplication);
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                state.speed = parseInt(this.value);
+            });
+            
+            document.getElementById('enqueueValue').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') enqueue();
+            });
+        }
+
+        function initializeQueue() {
+            state.queue = [10, 20, 30, 40, 50];
+            state.operationsCount = 0;
+            state.highlightedIndex = -1;
+            state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+            state.rearElement = state.queue.length > 0 ? state.queue[state.queue.length - 1] : null;
+            
+            updateStats();
+        }
+
+        async function enqueue() {
+            if (state.isAnimating) return;
+            
+            const valueInput = document.getElementById('enqueueValue');
+            let value = valueInput.value.trim();
+            
+            if (!value) {
+                updateStatus('Please enter a value to enqueue');
+                return;
+            }
+            
+            // If it's a number, convert it
+            if (!isNaN(value) && value !== '') {
+                value = Number(value);
+            }
+            
+            if (state.queue.length >= state.maxSize) {
+                updateStatus(`Queue is full (max ${state.maxSize} elements for visualization)`);
+                return;
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Enqueuing...';
+            
+            // Highlight the enqueue position
+            state.highlightedIndex = state.queue.length;
+            render();
+            await sleep(state.speed / 2);
+            
+            // Add to queue
+            state.queue.push(value);
+            state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+            state.rearElement = value;
+            state.operationsCount++;
+            
+            // Animate the enqueue
+            state.highlightedIndex = state.queue.length - 1;
+            renderWithAnimation('enqueue');
+            await sleep(state.speed);
+            
+            updateStats();
+            updateStatus(`Enqueued ${value} to rear of queue`);
+            updateAction(`Enqueued ${value}`);
+            
+            valueInput.value = '';
+            valueInput.focus();
+            
+            state.highlightedIndex = -1;
+            render();
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function dequeue() {
+            if (state.isAnimating) return;
+            
+            if (state.queue.length === 0) {
+                updateStatus('Queue is empty, cannot dequeue');
+                return;
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Dequeuing...';
+            
+            // Highlight the front element
+            state.highlightedIndex = 0;
+            render();
+            await sleep(state.speed / 2);
+            
+            const dequeuedValue = state.queue[0];
+            
+            // Animate the dequeue
+            renderWithAnimation('dequeue');
+            await sleep(state.speed);
+            
+            // Remove from queue
+            state.queue.shift();
+            state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+            state.rearElement = state.queue.length > 0 ? state.queue[state.queue.length - 1] : null;
+            state.operationsCount++;
+            
+            updateStats();
+            updateStatus(`Dequeued ${dequeuedValue} from front of queue`);
+            updateAction(`Dequeued ${dequeuedValue}`);
+            
+            state.highlightedIndex = -1;
+            render();
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function peekFront() {
+            if (state.queue.length === 0) {
+                updateStatus('Queue is empty, cannot peek');
+                return;
+            }
+            
+            state.highlightedIndex = 0;
+            render();
+            
+            updateStatus(`Front element is: ${state.frontElement}`);
+            updateAction(`Peeked at front: ${state.frontElement}`);
+            
+            await sleep(state.speed * 2);
+            
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        async function enqueueRandom() {
+            if (state.isAnimating) return;
+            
+            if (state.queue.length >= state.maxSize) {
+                updateStatus(`Queue is full (max ${state.maxSize} elements for visualization)`);
+                return;
+            }
+            
+            const randomValue = Math.floor(Math.random() * 90) + 10;
+            document.getElementById('enqueueValue').value = randomValue;
+            
+            await enqueue();
+        }
+
+        function clearQueue() {
+            state.queue = [];
+            state.frontElement = null;
+            state.rearElement = null;
+            state.highlightedIndex = -1;
+            state.operationsCount++;
+            
+            updateStats();
+            render();
+            
+            updateStatus('Queue cleared');
+            updateAction('Cleared queue');
+        }
+
+        async function runApplication() {
+            if (state.isAnimating) return;
+            
+            const app = document.getElementById('applicationSelect').value;
+            if (!app) {
+                updateStatus('Please select an application first');
+                return;
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Running application...';
+            
+            switch(app) {
+                case 'printer':
+                    await printerQueue();
+                    break;
+            }
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+
+        async function printerQueue() {
+            updateStatus('Simulating Printer Queue...');
+            
+            // Clear current queue
+            const originalQueue = [...state.queue];
+            clearQueue();
+            
+            const printJobs = [
+                {id: 'Doc1', pages: 3},
+                {id: 'Doc2', pages: 1},
+                {id: 'Doc3', pages: 5},
+                {id: 'Doc4', pages: 2},
+                {id: 'Doc5', pages: 4}
+            ];
+            
+            // Enqueue all print jobs
+            for (const job of printJobs) {
+                state.queue.push(job.id);
+                state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+                state.rearElement = job.id;
+                state.highlightedIndex = state.queue.length - 1;
+                renderWithAnimation('enqueue');
+                await sleep(state.speed);
+                
+                updateStatus(`Added print job: ${job.id} (${job.pages} pages)`);
+            }
+            
+            // Process print jobs
+            while (state.queue.length > 0) {
+                const currentJob = printJobs.find(job => job.id === state.queue[0]);
+                state.highlightedIndex = 0;
+                render();
+                await sleep(state.speed * 2);
+                
+                updateStatus(`Printing: ${currentJob.id} (${currentJob.pages} pages)...`);
+                
+                // Simulate printing time
+                for (let i = 0; i < currentJob.pages; i++) {
+                    await sleep(state.speed / 2);
+                    updateStatus(`Printing page ${i + 1} of ${currentJob.pages}...`);
+                }
+                
+                // Dequeue after printing
+                state.queue.shift();
+                state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+                state.rearElement = state.queue.length > 0 ? state.queue[state.queue.length - 1] : null;
+                renderWithAnimation('dequeue');
+                await sleep(state.speed);
+                
+                updateStatus(`Completed: ${currentJob.id}`);
+            }
+            
+            updateStatus('All print jobs completed');
+            updateAction('Ran printer queue simulation');
+            
+            // Restore original queue
+            state.queue = originalQueue;
+            state.frontElement = state.queue.length > 0 ? state.queue[0] : null;
+            state.rearElement = state.queue.length > 0 ? state.queue[state.queue.length - 1] : null;
+            state.highlightedIndex = -1;
+            render();
+        }
+   
+
+        function stepApplication() {
+            updateStatus('Step-by-step execution - use Run for full application');
+        }
+
+        function updateStats() {
+            queueSize.textContent = state.queue.length;
+            frontElement.textContent = state.frontElement !== null ? state.frontElement : 'None';
+            rearElement.textContent = state.rearElement !== null ? state.rearElement : 'None';
+            isEmpty.textContent = state.queue.length === 0 ? 'Yes' : 'No';
+            opCount.textContent = state.operationsCount;
+            
+            // Update queue info
+            if (state.queue.length === 0) {
+                queueInfo.textContent = 'Queue is empty. Enqueue elements to build the queue.';
+            } else {
+                queueInfo.textContent = `Queue has ${state.queue.length} elements. Front: ${state.frontElement}, Rear: ${state.rearElement}.`;
+            }
+        }
+
+        function updateInfo() {
+            infoText.textContent = 'Queue: FIFO (First In First Out) data structure. Operations: enqueue (add to rear), dequeue (remove from front), peek (view front).';
+            complexityText.textContent = 'Enqueue/Dequeue: O(1) | Space: O(n)';
+        }
+
+        function render() {
+            canvas.innerHTML = '';
+            
+            const container = document.createElement('div');
+            container.className = 'queue-container';
+            
+            // Create queue elements
+            for (let i = 0; i < state.queue.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'queue-element';
+                element.textContent = state.queue[i];
+                
+                if (i === state.highlightedIndex) {
+                    element.classList.add('highlighted');
+                }
+                
+                if (i === 0) {
+                    element.classList.add('front');
+                    
+                    // Add front pointer
+                    const frontPointer = document.createElement('div');
+                    frontPointer.className = 'queue-pointer front-pointer';
+                    frontPointer.textContent = 'FRONT';
+                    element.appendChild(frontPointer);
+                }
+                
+                if (i === state.queue.length - 1) {
+                    element.classList.add('rear');
+                    
+                    // Add rear pointer
+                    const rearPointer = document.createElement('div');
+                    rearPointer.className = 'queue-pointer rear-pointer';
+                    rearPointer.textContent = 'REAR';
+                    element.appendChild(rearPointer);
+                }
+                
+                container.appendChild(element);
+            }
+            
+            canvas.appendChild(container);
+        }
+
+        function renderWithAnimation(animationType) {
+            canvas.innerHTML = '';
+            
+            const container = document.createElement('div');
+            container.className = 'queue-container';
+            
+            // Create queue elements
+            for (let i = 0; i < state.queue.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'queue-element';
+                element.textContent = state.queue[i];
+                
+                if (i === state.highlightedIndex) {
+                    element.classList.add('highlighted');
+                    
+                    if (animationType === 'enqueue') {
+                        element.classList.add('enqueuing');
+                    } else if (animationType === 'dequeue') {
+                        element.classList.add('dequeuing');
+                    }
+                }
+                
+                if (i === 0) {
+                    element.classList.add('front');
+                    
+                    // Add front pointer
+                    const frontPointer = document.createElement('div');
+                    frontPointer.className = 'queue-pointer front-pointer';
+                    frontPointer.textContent = 'FRONT';
+                    element.appendChild(frontPointer);
+                }
+                
+                if (i === state.queue.length - 1) {
+                    element.classList.add('rear');
+                    
+                    // Add rear pointer
+                    const rearPointer = document.createElement('div');
+                    rearPointer.className = 'queue-pointer rear-pointer';
+                    rearPointer.textContent = 'REAR';
+                    element.appendChild(rearPointer);
+                }
+                
+                container.appendChild(element);
+            }
+            
+            canvas.appendChild(container);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

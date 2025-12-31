@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Stack</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-red));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(144, 205, 244, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-red));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus,
+        input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(144, 205, 244, 0.2);
+        }
+
+        button {
+            background: var(--accent-blue);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(144, 205, 244, 0.3);
+        }
+
+        button:hover {
+            background: #63b3ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(144, 205, 244, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(254, 178, 178, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Stack Specific Styles */
+        .stack-container {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            margin-top: 50px;
+            gap: 2px;
+        }
+
+        .stack-element {
+            width: 180px;
+            height: 50px;
+            background: var(--accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 3px 8px rgba(144, 205, 244, 0.4);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stack-element.highlighted {
+            background: var(--accent-yellow);
+            transform: scale(1.05);
+            box-shadow: 0 5px 12px rgba(250, 240, 137, 0.5);
+        }
+
+        .stack-element.top {
+            background: var(--accent-red);
+            border: 3px solid var(--accent-yellow);
+        }
+
+        .stack-element.pushing {
+            background: var(--accent-green);
+            animation: pushAnimation 0.5s ease;
+        }
+
+        .stack-element.popping {
+            background: var(--accent-purple);
+            animation: popAnimation 0.5s ease;
+        }
+
+        @keyframes pushAnimation {
+            0% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes popAnimation {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+
+        .stack-base {
+            width: 200px;
+            height: 20px;
+            background: var(--border-light);
+            border-radius: 4px;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .stack-base::after {
+            content: 'BASE';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .stack-top-pointer {
+            position: absolute;
+            right: -80px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stack-top-pointer .arrow {
+            width: 40px;
+            height: 2px;
+            background: var(--accent-red);
+            position: relative;
+        }
+
+        .stack-top-pointer .arrow::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-top: 7px solid transparent;
+            border-bottom: 7px solid transparent;
+            border-left: 14px solid var(--accent-red);
+        }
+
+        .stack-top-pointer .label {
+            font-size: 14px;
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .stack-stats {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .stack-size {
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        .stack-top-value {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-red);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .control-row {
+                flex-direction: column;
+            }
+
+            .stack-element {
+                width: 150px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" />
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" fill="none" />
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Stack (LIFO)</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Stack Operations</div>
+                <div class="control-row">
+                    <input type="text" id="pushValue" placeholder="Value to push">
+                    <button id="pushBtn">Push</button>
+                </div>
+                <div class="control-row">
+                    <button id="popBtn">Pop</button>
+                    <button id="peekBtn" class="ghost">Peek</button>
+                </div>
+                <div class="button-group">
+                    <button id="randomPushBtn">Push Random</button>
+                    <button id="clearStackBtn" class="ghost">Clear Stack</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <!-- <div class="section-title">Stack Applications</div>
+                <select id="applicationSelect">
+                    <option value="">Select Application</option>
+                    <option value="bracket">Bracket Matching</option>
+                    <option value="expression">Expression Evaluation</option>
+                    <option value="undo">Undo/Redo Simulation</option>
+                    <option value="dfs">DFS Traversal</option>
+                </select> -->
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="runAppBtn">Run </button>
+                    <button id="stepBtn" class="ghost">Step</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Speed:</label>
+                    <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Stack Statistics</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    <div>Stack Size: <span id="stackSize" class="stack-size">0</span></div>
+                    <div>Capacity: <span id="stackCapacity">∞ (dynamic)</span></div>
+                    <div>Top Element: <span id="topElement" class="stack-top-value">None</span></div>
+                    <div>Is Empty: <span id="isEmpty">Yes</span></div>
+                    <div>Operations Count: <span id="opCount">0</span></div>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">Stack Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Stack: LIFO (Last In First Out) data structure. Operations: push (add to top), pop (remove from
+                    top), peek (view top).
+                </div>
+                <div id="complexityText"
+                    style="font-size: 0.8rem; color: var(--accent-blue); margin-top: 8px; font-weight: 600;">
+                    Push/Pop: O(1) | Space: O(n)
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    <div>✓ Last In First Out (LIFO)</div>
+                    <div>✓ Constant time operations</div>
+                    <div>✓ Used in recursion, parsing, undo operations</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Stack Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="stackType">Type: Dynamic Array Implementation</span> |
+                    <span id="operationStatus">Ready</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas">
+                    <div class="stack-stats">
+                        <div id="stackInfo">Push elements to build the stack. Last element added is at the top.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue);"></div>
+                        <span>Normal Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Top Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Pushing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Popping</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Highlighted</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Use push to add elements, pop to remove. Stack follows LIFO principle.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            stack: [],
+            isAnimating: false,
+            speed: 300,
+            operationsCount: 0,
+            highlightedIndex: -1,
+            topElement: null,
+            maxSize: 10 // Visual limit
+        };
+
+        const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const infoText = document.getElementById('infoText');
+        const complexityText = document.getElementById('complexityText');
+        const stackSize = document.getElementById('stackSize');
+        const stackCapacity = document.getElementById('stackCapacity');
+        const topElement = document.getElementById('topElement');
+        const isEmpty = document.getElementById('isEmpty');
+        const opCount = document.getElementById('opCount');
+        const operationStatus = document.getElementById('operationStatus');
+        const stackInfo = document.getElementById('stackInfo');
+        const stackType = document.getElementById('stackType');
+
+        function init() {
+            setupEventListeners();
+            initializeStack();
+            render();
+            updateInfo();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('pushBtn').addEventListener('click', push);
+            document.getElementById('popBtn').addEventListener('click', pop);
+            document.getElementById('peekBtn').addEventListener('click', peek);
+            document.getElementById('randomPushBtn').addEventListener('click', pushRandom);
+            document.getElementById('clearStackBtn').addEventListener('click', clearStack);
+            document.getElementById('runAppBtn').addEventListener('click', runApplication);
+            document.getElementById('stepBtn').addEventListener('click', stepApplication);
+
+            document.getElementById('speedSlider').addEventListener('input', function () {
+                state.speed = parseInt(this.value);
+            });
+
+            document.getElementById('pushValue').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') push();
+            });
+        }
+
+        function initializeStack() {
+            state.stack = [30, 20, 10];
+            state.operationsCount = 0;
+            state.highlightedIndex = -1;
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+
+            updateStats();
+        }
+
+        async function push() {
+            if (state.isAnimating) return;
+
+            const valueInput = document.getElementById('pushValue');
+            let value = valueInput.value.trim();
+
+            if (!value) {
+                updateStatus('Please enter a value to push');
+                return;
+            }
+
+            // If it's a number, convert it
+            if (!isNaN(value) && value !== '') {
+                value = Number(value);
+            }
+
+            if (state.stack.length >= state.maxSize) {
+                updateStatus(`Stack is full (max ${state.maxSize} elements for visualization)`);
+                return;
+            }
+
+            state.isAnimating = true;
+            operationStatus.textContent = 'Pushing...';
+
+            // Highlight the push operation
+            state.highlightedIndex = state.stack.length;
+            render();
+            await sleep(state.speed / 2);
+
+            // Add to stack
+            state.stack.push(value);
+            state.topElement = value;
+            state.operationsCount++;
+
+            // Animate the push
+            state.highlightedIndex = state.stack.length - 1;
+            renderWithAnimation('push');
+            await sleep(state.speed);
+
+            updateStats();
+            updateStatus(`Pushed ${value} onto stack`);
+            updateAction(`Pushed ${value}`);
+
+            valueInput.value = '';
+            valueInput.focus();
+
+            state.highlightedIndex = -1;
+            render();
+
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function pop() {
+            if (state.isAnimating) return;
+
+            if (state.stack.length === 0) {
+                updateStatus('Stack is empty, cannot pop');
+                return;
+            }
+
+            state.isAnimating = true;
+            operationStatus.textContent = 'Popping...';
+
+            // Highlight the top element
+            state.highlightedIndex = state.stack.length - 1;
+            render();
+            await sleep(state.speed / 2);
+
+            const poppedValue = state.stack[state.stack.length - 1];
+
+            // Animate the pop
+            renderWithAnimation('pop');
+            await sleep(state.speed);
+
+            // Remove from stack
+            state.stack.pop();
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+            state.operationsCount++;
+
+            updateStats();
+            updateStatus(`Popped ${poppedValue} from stack`);
+            updateAction(`Popped ${poppedValue}`);
+
+            state.highlightedIndex = -1;
+            render();
+
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function peek() {
+            if (state.stack.length === 0) {
+                updateStatus('Stack is empty, cannot peek');
+                return;
+            }
+
+            state.highlightedIndex = state.stack.length - 1;
+            render();
+
+            updateStatus(`Top element is: ${state.topElement}`);
+            updateAction(`Peeked at ${state.topElement}`);
+
+            await sleep(state.speed * 2);
+
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        async function pushRandom() {
+            if (state.isAnimating) return;
+
+            if (state.stack.length >= state.maxSize) {
+                updateStatus(`Stack is full (max ${state.maxSize} elements for visualization)`);
+                return;
+            }
+
+            const randomValue = Math.floor(Math.random() * 90) + 10;
+            document.getElementById('pushValue').value = randomValue;
+
+            await push();
+        }
+
+        function clearStack() {
+            state.stack = [];
+            state.topElement = null;
+            state.highlightedIndex = -1;
+            state.operationsCount++;
+
+            updateStats();
+            render();
+
+            updateStatus('Stack cleared');
+            updateAction('Cleared stack');
+        }
+
+        async function runApplication() {
+            if (state.isAnimating) return;
+
+            const app = document.getElementById('applicationSelect').value;
+            if (!app) {
+                updateStatus('Please select an application first');
+                return;
+            }
+
+            state.isAnimating = true;
+            operationStatus.textContent = 'Running application...';
+
+            switch (app) {
+                case 'bracket':
+                    await bracketMatching();
+                    break;
+                case 'expression':
+                    await expressionEvaluation();
+                    break;
+                case 'undo':
+                    await undoRedoSimulation();
+                    break;
+                case 'dfs':
+                    await dfsSimulation();
+                    break;
+            }
+
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function bracketMatching() {
+            updateStatus('Running bracket matching algorithm...');
+
+            // Clear current stack
+            const originalStack = [...state.stack];
+            clearStack();
+
+            const expression = "{[()()]}";
+            let isValid = true;
+
+            for (let i = 0; i < expression.length; i++) {
+                const char = expression[i];
+
+                if (char === '(' || char === '[' || char === '{') {
+                    // Push opening bracket
+                    state.stack.push(char);
+                    state.topElement = char;
+                    state.highlightedIndex = state.stack.length - 1;
+                    render();
+                    await sleep(state.speed);
+
+                    updateStatus(`Pushed opening bracket: ${char}`);
+                } else if (char === ')' || char === ']' || char === '}') {
+                    // Check for matching opening bracket
+                    if (state.stack.length === 0) {
+                        isValid = false;
+                        break;
+                    }
+
+                    const top = state.stack[state.stack.length - 1];
+                    state.highlightedIndex = state.stack.length - 1;
+                    render();
+                    await sleep(state.speed);
+
+                    if ((char === ')' && top === '(') ||
+                        (char === ']' && top === '[') ||
+                        (char === '}' && top === '{')) {
+                        // Pop matching bracket
+                        state.stack.pop();
+                        state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+                        renderWithAnimation('pop');
+                        await sleep(state.speed);
+
+                        updateStatus(`Matched ${top} with ${char}, popped from stack`);
+                    } else {
+                        isValid = false;
+                        break;
+                    }
+                }
+            }
+
+            // Check if stack is empty at the end
+            if (state.stack.length > 0) {
+                isValid = false;
+            }
+
+            updateStatus(`Bracket matching complete. Expression "${expression}" is ${isValid ? 'VALID' : 'INVALID'}`);
+            updateAction('Ran bracket matching');
+
+            // Restore original stack
+            state.stack = originalStack;
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        async function expressionEvaluation() {
+            updateStatus('Running expression evaluation (Postfix)...');
+
+            // Clear current stack
+            const originalStack = [...state.stack];
+            clearStack();
+
+            const postfixExpression = "3 4 + 2 * 7 /";
+            const tokens = postfixExpression.split(' ').filter(token => token.trim() !== '');
+
+            for (const token of tokens) {
+                if (!isNaN(token)) {
+                    // Operand: push to stack
+                    state.stack.push(Number(token));
+                    state.topElement = Number(token);
+                    state.highlightedIndex = state.stack.length - 1;
+                    render();
+                    await sleep(state.speed);
+
+                    updateStatus(`Pushed operand: ${token}`);
+                } else {
+                    // Operator: pop two operands, apply operator, push result
+                    if (state.stack.length < 2) {
+                        updateStatus('Invalid expression: insufficient operands');
+                        break;
+                    }
+
+                    const b = state.stack.pop();
+                    const a = state.stack.pop();
+                    state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+
+                    let result;
+                    switch (token) {
+                        case '+': result = a + b; break;
+                        case '-': result = a - b; break;
+                        case '*': result = a * b; break;
+                        case '/': result = a / b; break;
+                        default: result = 0;
+                    }
+
+                    renderWithAnimation('pop');
+                    await sleep(state.speed);
+
+                    state.stack.push(result);
+                    state.topElement = result;
+                    state.highlightedIndex = state.stack.length - 1;
+                    renderWithAnimation('push');
+                    await sleep(state.speed);
+
+                    updateStatus(`Applied ${token} to ${a} and ${b}, pushed result: ${result}`);
+                }
+            }
+
+            if (state.stack.length === 1) {
+                updateStatus(`Expression "${postfixExpression}" evaluates to: ${state.stack[0]}`);
+            }
+
+            updateAction('Ran expression evaluation');
+
+            // Restore original stack
+            state.stack = originalStack;
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        async function undoRedoSimulation() {
+            updateStatus('Running Undo/Redo simulation...');
+
+            // Clear current stack
+            const originalStack = [...state.stack];
+            clearStack();
+
+            const actions = ['Type "H"', 'Type "e"', 'Type "l"', 'Type "l"', 'Type "o"'];
+            const undoStack = [];
+
+            for (let i = 0; i < actions.length; i++) {
+                // Perform action
+                state.stack.push(actions[i]);
+                state.topElement = actions[i];
+                state.highlightedIndex = state.stack.length - 1;
+                renderWithAnimation('push');
+                await sleep(state.speed);
+
+                updateStatus(`Action: ${actions[i]}`);
+
+                // Simulate undo after some actions
+                if (i === 2 || i === 4) {
+                    await sleep(state.speed * 2);
+
+                    // Undo last action
+                    const undoneAction = state.stack.pop();
+                    undoStack.push(undoneAction);
+                    state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+                    renderWithAnimation('pop');
+                    await sleep(state.speed);
+
+                    updateStatus(`Undo: ${undoneAction}`);
+
+                    // Simulate redo
+                    await sleep(state.speed * 2);
+                    if (undoStack.length > 0) {
+                        const redoneAction = undoStack.pop();
+                        state.stack.push(redoneAction);
+                        state.topElement = redoneAction;
+                        renderWithAnimation('push');
+                        await sleep(state.speed);
+
+                        updateStatus(`Redo: ${redoneAction}`);
+                    }
+                }
+            }
+
+            updateStatus('Undo/Redo simulation complete');
+            updateAction('Ran undo/redo simulation');
+
+            // Restore original stack
+            state.stack = originalStack;
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        async function dfsSimulation() {
+            updateStatus('Simulating Depth-First Search (DFS)...');
+
+            // Clear current stack
+            const originalStack = [...state.stack];
+            clearStack();
+
+            // Simulate DFS on a simple graph
+            const graph = {
+                'A': ['B', 'C'],
+                'B': ['D', 'E'],
+                'C': ['F'],
+                'D': [],
+                'E': ['G'],
+                'F': [],
+                'G': []
+            };
+
+            const visited = new Set();
+            state.stack.push('A'); // Start from node A
+            state.topElement = 'A';
+
+            while (state.stack.length > 0) {
+                const node = state.stack[state.stack.length - 1];
+                state.highlightedIndex = state.stack.length - 1;
+                render();
+                await sleep(state.speed);
+
+                if (!visited.has(node)) {
+                    visited.add(node);
+                    updateStatus(`Visiting node: ${node}`);
+
+                    // Add unvisited neighbors to stack
+                    const neighbors = graph[node] || [];
+                    for (let i = neighbors.length - 1; i >= 0; i--) {
+                        if (!visited.has(neighbors[i])) {
+                            state.stack.push(neighbors[i]);
+                        }
+                    }
+                } else {
+                    // Node already visited, pop it
+                    state.stack.pop();
+                    state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+                    renderWithAnimation('pop');
+                    await sleep(state.speed);
+
+                    updateStatus(`Backtracking from node: ${node}`);
+                }
+            }
+
+            updateStatus('DFS traversal complete');
+            updateAction('Ran DFS simulation');
+
+            // Restore original stack
+            state.stack = originalStack;
+            state.topElement = state.stack.length > 0 ? state.stack[state.stack.length - 1] : null;
+            state.highlightedIndex = -1;
+            render();
+        }
+
+        function stepApplication() {
+            updateStatus('Step-by-step execution - use Run for full application');
+        }
+
+        function updateStats() {
+            stackSize.textContent = state.stack.length;
+            topElement.textContent = state.topElement !== null ? state.topElement : 'None';
+            isEmpty.textContent = state.stack.length === 0 ? 'Yes' : 'No';
+            opCount.textContent = state.operationsCount;
+
+            // Update stack info
+            if (state.stack.length === 0) {
+                stackInfo.textContent = 'Stack is empty. Push elements to build the stack.';
+            } else {
+                stackInfo.textContent = `Stack has ${state.stack.length} elements. Top element is ${state.topElement}.`;
+            }
+        }
+
+        function updateInfo() {
+            infoText.textContent = 'Stack: LIFO (Last In First Out) data structure. Operations: push (add to top), pop (remove from top), peek (view top).';
+            complexityText.textContent = 'Push/Pop: O(1) | Space: O(n)';
+        }
+
+        function render() {
+            canvas.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'stack-container';
+            const baseLabel = document.createElement('div');
+            baseLabel.textContent = 'BASE';
+            baseLabel.style.textAlign = 'center';
+            baseLabel.style.fontWeight = 'bold';
+            baseLabel.style.marginTop = '5px';
+            container.appendChild(baseLabel);
+            // Add base
+            const base = document.createElement('div');
+            base.className = 'stack-base';
+            container.appendChild(base);
+            
+            // Create stack elements
+            for (let i = 0; i < state.stack.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = state.stack[i];
+
+                if (i === state.highlightedIndex) {
+                    element.classList.add('highlighted');
+                }
+
+                if (i === state.stack.length - 1) {
+                    element.classList.add('top');
+
+                    // Add top pointer
+                    const topPointer = document.createElement('div');
+                    topPointer.className = 'stack-top-pointer';
+                    topPointer.innerHTML = `
+                        <div class="arrow"></div>
+                        <div class="label">TOP</div>
+                    `;
+                    element.appendChild(topPointer);
+                }
+
+                container.appendChild(element);
+            }
+
+
+
+            canvas.appendChild(container);
+        }
+
+        function renderWithAnimation(animationType) {
+            canvas.innerHTML = '';
+
+            const container = document.createElement('div');
+            container.className = 'stack-container';
+            // Add base
+            const base = document.createElement('div');
+            base.className = 'stack-base';
+            base.textContent = 'BASE';
+            container.appendChild(base);
+
+            // Create stack elements
+            for (let i = 0; i < state.stack.length; i++) {
+                const element = document.createElement('div');
+                element.className = 'stack-element';
+                element.textContent = state.stack[i];
+
+                if (i === state.highlightedIndex) {
+                    element.classList.add('highlighted');
+
+                    if (animationType === 'push') {
+                        element.classList.add('pushing');
+                    } else if (animationType === 'pop') {
+                        element.classList.add('popping');
+                    }
+                }
+
+                if (i === state.stack.length - 1) {
+                    element.classList.add('top');
+
+                    // Add top pointer
+                    const topPointer = document.createElement('div');
+                    topPointer.className = 'stack-top-pointer';
+                    topPointer.innerHTML = `
+                        <div class="arrow"></div>
+                        <div class="label">TOP</div>
+                    `;
+                    element.appendChild(topPointer);
+                }
+
+                container.appendChild(element);
+            }
+
+
+            canvas.appendChild(container);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+
+</html>

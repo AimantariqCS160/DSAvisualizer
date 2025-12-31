@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Array Sorting</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-yellow));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(144, 205, 244, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-yellow));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-blue);
+            border-radius: 2px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(144, 205, 244, 0.2);
+        }
+
+        button {
+            background: var(--accent-blue);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(144, 205, 244, 0.3);
+        }
+
+        button:hover {
+            background: #63b3ed;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(144, 205, 244, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-yellow);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(250, 240, 137, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .array-container {
+            display: flex;
+            align-items: flex-end;
+            height: 400px;
+            gap: 8px;
+            justify-content: center;
+            padding: 40px 20px;
+            margin-top: 20px;
+        }
+
+        .array-bar {
+            background: var(--accent-blue);
+            width: 50px;
+            min-width: 40px;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 8px;
+            color: var(--text-dark);
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 3px 8px rgba(144, 205, 244, 0.4);
+            cursor: pointer;
+        }
+
+        .array-bar.comparing {
+            background: var(--accent-red);
+            transform: scaleY(1.05);
+        }
+
+        .array-bar.swapping {
+            background: var(--accent-yellow);
+            transform: translateY(-10px);
+        }
+
+        .array-bar.sorted {
+            background: var(--accent-green);
+        }
+
+        .array-bar.pivot {
+            background: var(--accent-purple);
+        }
+
+        .array-bar.selected {
+            background: var(--accent-pink);
+        }
+
+        .array-bar:hover {
+            transform: scaleY(1.05);
+            box-shadow: 0 5px 12px rgba(144, 205, 244, 0.6);
+        }
+
+        .array-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        .comparison-count {
+            color: var(--accent-red);
+            font-weight: bold;
+        }
+
+        .swap-count {
+            color: var(--accent-yellow);
+            font-weight: bold;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-blue);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-yellow);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .control-row {
+                flex-direction: column;
+            }
+            .array-bar {
+                width: 30px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" fill="none"/>
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Array Sorting Algorithms</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Array Configuration</div>
+                <div class="control-row">
+                    <input type="text" id="arrayInput" placeholder="Values (comma separated)" value="64,34,25,12,22,11,90,80,45,33">
+                    <button id="setArrayBtn">Set Array</button>
+                </div>
+                <div class="control-row">
+                    <input type="number" id="arraySize" placeholder="Size" value="10" min="5" max="30">
+                    <button id="randomArrayBtn">Random Array</button>
+                </div>
+                <div class="button-group">
+                    <button id="reverseArrayBtn">Reverse Array</button>
+                    <button id="shuffleArrayBtn" class="ghost">Shuffle</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Sorting Algorithm</div>
+                <select id="algoSelect">
+                    <option value="">Select Algorithm</option>
+                    <optgroup label="Simple Sorts">
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="insertion">Insertion Sort</option>
+                    </optgroup>
+                    <optgroup label="Efficient Sorts">
+                        <option value="merge">Merge Sort</option>
+                        <option value="quick">Quick Sort</option>
+                        <option value="heap">Heap Sort</option>
+                    </optgroup>
+                    <optgroup label="Specialized">
+                        <option value="counting">Counting Sort</option>
+                        <option value="radix">Radix Sort</option>
+                    </optgroup>
+                </select>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="playBtn">Run Sort</button>
+                    <button id="stepBtn" class="ghost">Step</button>
+                    <button id="pauseBtn" class="ghost">Pause</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Speed:</label>
+                    <input type="range" id="speedSlider" min="10" max="1000" value="100" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Statistics</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    <div>Array Size: <span id="arraySizeDisplay">10</span></div>
+                    <div>Comparisons: <span id="comparisonCount" class="comparison-count">0</span></div>
+                    <div>Swaps: <span id="swapCount" class="swap-count">0</span></div>
+                    <div>Time: <span id="timeDisplay">0 ms</span></div>
+                    <div>Status: <span id="sortStatus">Ready</span></div>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">Algorithm Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Select a sorting algorithm to see its visualization and time complexity.
+                </div>
+                <div id="complexityText" style="font-size: 0.8rem; color: var(--accent-blue); margin-top: 8px; font-weight: 600;">
+                    Time: - | Space: -
+                </div>
+                <div id="algorithmDesc" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Array Sorting Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="currentAlgo">No algorithm selected</span> | 
+                    <span id="arrayRange">Range: 0-100</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas">
+                    <div class="array-info">
+                        
+                        <!-- <div id="algoInfo">Select an algorithm and click "Run Sort" to begin visualization</div> -->
+                    </div>
+                    <div class="array-container" id="arrayContainer"></div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue);"></div>
+                        <span>Normal Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Comparing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Swapping</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Sorted</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Pivot/Partition</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-pink);"></div>
+                        <span>Selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Ready. Set array values and select a sorting algorithm.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            array: [64, 34, 25, 12, 22, 11, 90, 80, 45, 33],
+            algorithm: '',
+            speed: 100,
+            isAnimating: false,
+            isPaused: false,
+            comparisonCount: 0,
+            swapCount: 0,
+            startTime: 0,
+            highlightedIndices: new Set(),
+            sortedIndices: new Set(),
+            swappingIndices: new Set(),
+            pivotIndex: -1,
+            currentStep: 0,
+            totalSteps: 0,
+            algorithmSteps: []
+        };
+
+        const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const infoText = document.getElementById('infoText');
+        const complexityText = document.getElementById('complexityText');
+        const algorithmDesc = document.getElementById('algorithmDesc');
+        const arraySizeDisplay = document.getElementById('arraySizeDisplay');
+        const comparisonCount = document.getElementById('comparisonCount');
+        const swapCount = document.getElementById('swapCount');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const sortStatus = document.getElementById('sortStatus');
+        const currentAlgo = document.getElementById('currentAlgo');
+        const arrayRange = document.getElementById('arrayRange');
+        const algoInfo = document.getElementById('algoInfo');
+        const arrayContainer = document.getElementById('arrayContainer');
+
+        function init() {
+            setupEventListeners();
+            renderArray();
+            updateInfo();
+            updateStats();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('setArrayBtn').addEventListener('click', setArray);
+            document.getElementById('randomArrayBtn').addEventListener('click', generateRandomArray);
+            document.getElementById('reverseArrayBtn').addEventListener('click', reverseArray);
+            document.getElementById('shuffleArrayBtn').addEventListener('click', shuffleArray);
+            document.getElementById('playBtn').addEventListener('click', runSort);
+            document.getElementById('stepBtn').addEventListener('click', stepSort);
+            document.getElementById('pauseBtn').addEventListener('click', pauseSort);
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                state.speed = parseInt(this.value);
+            });
+            
+            document.getElementById('arrayInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') setArray();
+            });
+            
+            document.getElementById('algoSelect').addEventListener('change', function() {
+                state.algorithm = this.value;
+                updateInfo();
+            });
+        }
+
+        function setArray() {
+            const input = document.getElementById('arrayInput').value.trim();
+            if (!input) {
+                updateStatus('Please enter array values');
+                return;
+            }
+            
+            const values = input.split(',').map(v => v.trim()).filter(v => v).map(v => {
+                const num = parseInt(v);
+                return isNaN(num) ? 0 : num;
+            });
+            
+            if (values.length === 0) {
+                updateStatus('No valid values entered');
+                return;
+            }
+            
+            state.array = values;
+            resetState();
+            renderArray();
+            updateStats();
+            updateStatus(`Array set with ${values.length} elements`);
+            updateAction('Set array values');
+        }
+
+        function generateRandomArray() {
+            const size = parseInt(document.getElementById('arraySize').value) || 10;
+            state.array = Array.from({length: size}, () => Math.floor(Math.random() * 90) + 10);
+            document.getElementById('arrayInput').value = state.array.join(',');
+            resetState();
+            renderArray();
+            updateStats();
+            updateStatus(`Generated random array of size ${size}`);
+            updateAction('Generated random array');
+        }
+
+        function reverseArray() {
+            state.array.reverse();
+            renderArray();
+            updateStatus('Array reversed');
+            updateAction('Reversed array');
+        }
+
+        function shuffleArray() {
+            for (let i = state.array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [state.array[i], state.array[j]] = [state.array[j], state.array[i]];
+            }
+            resetState();
+            renderArray();
+            updateStatus('Array shuffled');
+            updateAction('Shuffled array');
+        }
+
+        function resetState() {
+            state.isAnimating = false;
+            state.isPaused = false;
+            state.comparisonCount = 0;
+            state.swapCount = 0;
+            state.highlightedIndices.clear();
+            state.sortedIndices.clear();
+            state.swappingIndices.clear();
+            state.pivotIndex = -1;
+            state.currentStep = 0;
+            state.totalSteps = 0;
+            state.algorithmSteps = [];
+            
+            updateStats();
+            sortStatus.textContent = 'Ready';
+        }
+
+        async function runSort() {
+            if (state.isAnimating) return;
+            
+            const algo = document.getElementById('algoSelect').value;
+            if (!algo) {
+                updateStatus('Please select a sorting algorithm first');
+                return;
+            }
+            
+            resetState();
+            state.isAnimating = true;
+            state.isPaused = false;
+            state.startTime = Date.now();
+            state.algorithm = algo;
+            
+            updateStatus(`Running ${getAlgoName(algo)}...`);
+            currentAlgo.textContent = `Algorithm: ${getAlgoName(algo)}`;
+            sortStatus.textContent = 'Running';
+            
+            try {
+                switch(algo) {
+                    case 'bubble':
+                        await bubbleSort();
+                        break;
+                    case 'selection':
+                        await selectionSort();
+                        break;
+                    case 'insertion':
+                        await insertionSort();
+                        break;
+                    case 'merge':
+                        await mergeSort();
+                        break;
+                    case 'quick':
+                        await quickSort();
+                        break;
+                    case 'heap':
+                        await heapSort();
+                        break;
+                    case 'counting':
+                        await countingSort();
+                        break;
+                    case 'radix':
+                        await radixSort();
+                        break;
+                }
+            } catch (error) {
+                console.error('Sorting error:', error);
+                updateStatus('Error during sorting');
+            }
+            
+            if (state.isAnimating) {
+                // Mark all as sorted
+                for (let i = 0; i < state.array.length; i++) {
+                    state.sortedIndices.add(i);
+                }
+                renderArray();
+                
+                const endTime = Date.now();
+                const elapsed = endTime - state.startTime;
+                timeDisplay.textContent = `${elapsed} ms`;
+                
+                updateStatus(`${getAlgoName(algo)} completed in ${elapsed}ms`);
+                updateAction(`Ran ${getAlgoName(algo)}`);
+                sortStatus.textContent = 'Completed';
+            }
+            
+            state.isAnimating = false;
+        }
+
+        function stepSort() {
+            if (!state.isAnimating) {
+                updateStatus('Start a sort first, then use step');
+                return;
+            }
+            // Step-by-step implementation would go here
+            updateStatus('Step-by-step execution');
+        }
+
+        function pauseSort() {
+            if (state.isAnimating) {
+                state.isPaused = !state.isPaused;
+                updateStatus(state.isPaused ? 'Sorting paused' : 'Sorting resumed');
+            }
+        }
+
+        async function bubbleSort() {
+            const n = state.array.length;
+            for (let i = 0; i < n - 1; i++) {
+                for (let j = 0; j < n - i - 1; j++) {
+                    if (state.isPaused) {
+                        await waitForResume();
+                    }
+                    
+                    state.highlightedIndices.clear();
+                    state.highlightedIndices.add(j);
+                    state.highlightedIndices.add(j + 1);
+                    state.comparisonCount++;
+                    renderArray();
+                    await sleep(state.speed);
+                    
+                    if (state.array[j] > state.array[j + 1]) {
+                        state.swappingIndices.clear();
+                        state.swappingIndices.add(j);
+                        state.swappingIndices.add(j + 1);
+                        renderArray();
+                        await sleep(state.speed / 2);
+                        
+                        [state.array[j], state.array[j + 1]] = [state.array[j + 1], state.array[j]];
+                        state.swapCount++;
+                        renderArray();
+                        await sleep(state.speed / 2);
+                        
+                        state.swappingIndices.clear();
+                    }
+                }
+                state.sortedIndices.add(n - i - 1);
+            }
+            state.sortedIndices.add(0);
+        }
+
+        async function selectionSort() {
+            const n = state.array.length;
+            for (let i = 0; i < n - 1; i++) {
+                let minIdx = i;
+                
+                for (let j = i + 1; j < n; j++) {
+                    if (state.isPaused) {
+                        await waitForResume();
+                    }
+                    
+                    state.highlightedIndices.clear();
+                    state.highlightedIndices.add(j);
+                    state.highlightedIndices.add(minIdx);
+                    state.comparisonCount++;
+                    renderArray();
+                    await sleep(state.speed);
+                    
+                    if (state.array[j] < state.array[minIdx]) {
+                        minIdx = j;
+                    }
+                }
+                
+                if (minIdx !== i) {
+                    state.swappingIndices.clear();
+                    state.swappingIndices.add(i);
+                    state.swappingIndices.add(minIdx);
+                    renderArray();
+                    await sleep(state.speed / 2);
+                    
+                    [state.array[i], state.array[minIdx]] = [state.array[minIdx], state.array[i]];
+                    state.swapCount++;
+                    renderArray();
+                    await sleep(state.speed / 2);
+                    
+                    state.swappingIndices.clear();
+                }
+                state.sortedIndices.add(i);
+            }
+            state.sortedIndices.add(n - 1);
+        }
+
+        async function insertionSort() {
+            const n = state.array.length;
+            for (let i = 1; i < n; i++) {
+                let key = state.array[i];
+                let j = i - 1;
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                while (j >= 0 && state.array[j] > key) {
+                    if (state.isPaused) {
+                        await waitForResume();
+                    }
+                    
+                    state.comparisonCount++;
+                    state.array[j + 1] = state.array[j];
+                    
+                    state.swappingIndices.clear();
+                    state.swappingIndices.add(j);
+                    state.swappingIndices.add(j + 1);
+                    renderArray();
+                    await sleep(state.speed);
+                    
+                    state.swapCount++;
+                    j = j - 1;
+                }
+                
+                state.array[j + 1] = key;
+                renderArray();
+                await sleep(state.speed);
+                
+                state.sortedIndices.add(i);
+            }
+        }
+
+        async function mergeSort() {
+            await mergeSortRecursive(0, state.array.length - 1);
+        }
+
+        async function mergeSortRecursive(left, right) {
+            if (left >= right) return;
+            
+            const mid = Math.floor((left + right) / 2);
+            
+            await mergeSortRecursive(left, mid);
+            await mergeSortRecursive(mid + 1, right);
+            
+            await merge(left, mid, right);
+        }
+
+        async function merge(left, mid, right) {
+            const leftArr = state.array.slice(left, mid + 1);
+            const rightArr = state.array.slice(mid + 1, right + 1);
+            
+            let i = 0, j = 0, k = left;
+            
+            while (i < leftArr.length && j < rightArr.length) {
+                if (state.isPaused) {
+                    await waitForResume();
+                }
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(left + i);
+                state.highlightedIndices.add(mid + 1 + j);
+                state.comparisonCount++;
+                renderArray();
+                await sleep(state.speed);
+                
+                if (leftArr[i] <= rightArr[j]) {
+                    state.array[k] = leftArr[i];
+                    i++;
+                } else {
+                    state.array[k] = rightArr[j];
+                    j++;
+                    state.swapCount++;
+                }
+                k++;
+                
+                renderArray();
+                await sleep(state.speed / 2);
+            }
+            
+            while (i < leftArr.length) {
+                state.array[k] = leftArr[i];
+                i++;
+                k++;
+                state.swapCount++;
+                renderArray();
+                await sleep(state.speed / 2);
+            }
+            
+            while (j < rightArr.length) {
+                state.array[k] = rightArr[j];
+                j++;
+                k++;
+                state.swapCount++;
+                renderArray();
+                await sleep(state.speed / 2);
+            }
+            
+            for (let idx = left; idx <= right; idx++) {
+                state.sortedIndices.add(idx);
+            }
+        }
+
+        async function quickSort() {
+            await quickSortRecursive(0, state.array.length - 1);
+        }
+
+        async function quickSortRecursive(low, high) {
+            if (low < high) {
+                const pi = await partition(low, high);
+                await quickSortRecursive(low, pi - 1);
+                await quickSortRecursive(pi + 1, high);
+            }
+            if (low === 0 && high === state.array.length - 1) {
+                for (let i = 0; i < state.array.length; i++) {
+                    state.sortedIndices.add(i);
+                }
+            }
+        }
+
+        async function partition(low, high) {
+            const pivot = state.array[high];
+            state.pivotIndex = high;
+            let i = low - 1;
+            
+            for (let j = low; j < high; j++) {
+                if (state.isPaused) {
+                    await waitForResume();
+                }
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(j);
+                state.highlightedIndices.add(high);
+                state.comparisonCount++;
+                renderArray();
+                await sleep(state.speed);
+                
+                if (state.array[j] < pivot) {
+                    i++;
+                    
+                    state.swappingIndices.clear();
+                    state.swappingIndices.add(i);
+                    state.swappingIndices.add(j);
+                    renderArray();
+                    await sleep(state.speed / 2);
+                    
+                    [state.array[i], state.array[j]] = [state.array[j], state.array[i]];
+                    state.swapCount++;
+                    renderArray();
+                    await sleep(state.speed / 2);
+                    
+                    state.swappingIndices.clear();
+                }
+            }
+            
+            state.swappingIndices.clear();
+            state.swappingIndices.add(i + 1);
+            state.swappingIndices.add(high);
+            renderArray();
+            await sleep(state.speed / 2);
+            
+            [state.array[i + 1], state.array[high]] = [state.array[high], state.array[i + 1]];
+            state.swapCount++;
+            state.pivotIndex = -1;
+            renderArray();
+            await sleep(state.speed);
+            
+            return i + 1;
+        }
+
+        async function heapSort() {
+            const n = state.array.length;
+            
+            // Build max heap
+            for (let i = Math.floor(n / 2) - 1; i >= 0; i--) {
+                await heapify(n, i);
+            }
+            
+            // Extract elements from heap
+            for (let i = n - 1; i > 0; i--) {
+                if (state.isPaused) {
+                    await waitForResume();
+                }
+                
+                state.swappingIndices.clear();
+                state.swappingIndices.add(0);
+                state.swappingIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                [state.array[0], state.array[i]] = [state.array[i], state.array[0]];
+                state.swapCount++;
+                state.sortedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                await heapify(i, 0);
+            }
+            state.sortedIndices.add(0);
+        }
+
+        async function heapify(n, i) {
+            let largest = i;
+            const left = 2 * i + 1;
+            const right = 2 * i + 2;
+            
+            if (left < n) {
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(left);
+                state.highlightedIndices.add(largest);
+                state.comparisonCount++;
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                if (state.array[left] > state.array[largest]) {
+                    largest = left;
+                }
+            }
+            
+            if (right < n) {
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(right);
+                state.highlightedIndices.add(largest);
+                state.comparisonCount++;
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                if (state.array[right] > state.array[largest]) {
+                    largest = right;
+                }
+            }
+            
+            if (largest !== i) {
+                state.swappingIndices.clear();
+                state.swappingIndices.add(i);
+                state.swappingIndices.add(largest);
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                [state.array[i], state.array[largest]] = [state.array[largest], state.array[i]];
+                state.swapCount++;
+                renderArray();
+                await sleep(state.speed / 2);
+                
+                await heapify(n, largest);
+            }
+        }
+
+        async function countingSort() {
+            const max = Math.max(...state.array);
+            const min = Math.min(...state.array);
+            const range = max - min + 1;
+            
+            const count = new Array(range).fill(0);
+            const output = new Array(state.array.length);
+            
+            // Store count of each element
+            for (let i = 0; i < state.array.length; i++) {
+                count[state.array[i] - min]++;
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 2);
+            }
+            
+            // Change count[i] so it contains position of this element
+            for (let i = 1; i < range; i++) {
+                count[i] += count[i - 1];
+            }
+            
+            // Build output array
+            for (let i = state.array.length - 1; i >= 0; i--) {
+                if (state.isPaused) {
+                    await waitForResume();
+                }
+                
+                output[count[state.array[i] - min] - 1] = state.array[i];
+                count[state.array[i] - min]--;
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(i);
+                renderArray();
+                await sleep(state.speed);
+            }
+            
+            // Copy output to original array
+            for (let i = 0; i < state.array.length; i++) {
+                state.array[i] = output[i];
+                state.sortedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 2);
+            }
+        }
+
+        async function radixSort() {
+            const max = Math.max(...state.array);
+            
+            // Do counting sort for every digit
+            for (let exp = 1; Math.floor(max / exp) > 0; exp *= 10) {
+                await countingSortForRadix(exp);
+                
+                // Show progress
+                for (let i = 0; i < state.array.length; i++) {
+                    state.sortedIndices.add(i);
+                }
+                renderArray();
+                await sleep(state.speed * 2);
+                
+                // Clear for next iteration
+                if (Math.floor(max / (exp * 10)) > 0) {
+                    state.sortedIndices.clear();
+                }
+            }
+        }
+
+        async function countingSortForRadix(exp) {
+            const n = state.array.length;
+            const output = new Array(n);
+            const count = new Array(10).fill(0);
+            
+            // Store count of occurrences
+            for (let i = 0; i < n; i++) {
+                const digit = Math.floor(state.array[i] / exp) % 10;
+                count[digit]++;
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 3);
+            }
+            
+            // Change count[i] so it contains position of this digit
+            for (let i = 1; i < 10; i++) {
+                count[i] += count[i - 1];
+            }
+            
+            // Build output array
+            for (let i = n - 1; i >= 0; i--) {
+                const digit = Math.floor(state.array[i] / exp) % 10;
+                output[count[digit] - 1] = state.array[i];
+                count[digit]--;
+                
+                state.highlightedIndices.clear();
+                state.highlightedIndices.add(i);
+                renderArray();
+                await sleep(state.speed / 3);
+            }
+            
+            // Copy output to original array
+            for (let i = 0; i < n; i++) {
+                state.array[i] = output[i];
+                renderArray();
+                await sleep(state.speed / 3);
+            }
+        }
+
+        async function waitForResume() {
+            while (state.isPaused && state.isAnimating) {
+                await sleep(100);
+            }
+        }
+
+        function renderArray() {
+            arrayContainer.innerHTML = '';
+            
+            const maxVal = Math.max(...state.array);
+            const minVal = Math.min(...state.array);
+            const heightScale = 350 / Math.max(maxVal - minVal, 1);
+            
+            state.array.forEach((value, index) => {
+                const bar = document.createElement('div');
+                bar.className = 'array-bar';
+                bar.textContent = value;
+                bar.style.height = `${(value - minVal + 10) * heightScale}px`;
+                bar.title = `Index ${index}: ${value}`;
+                
+                if (state.swappingIndices.has(index)) {
+                    bar.classList.add('swapping');
+                } else if (state.highlightedIndices.has(index)) {
+                    bar.classList.add('comparing');
+                } else if (state.sortedIndices.has(index)) {
+                    bar.classList.add('sorted');
+                } else if (index === state.pivotIndex) {
+                    bar.classList.add('pivot');
+                }
+                
+                bar.addEventListener('click', () => {
+                    // Highlight this bar
+                    state.highlightedIndices.clear();
+                    state.highlightedIndices.add(index);
+                    renderArray();
+                    updateStatus(`Selected element at index ${index}: ${value}`);
+                });
+                
+                arrayContainer.appendChild(bar);
+            });
+            
+            // Update range display
+            arrayRange.textContent = `Range: ${minVal}-${maxVal}`;
+            
+            // Update stats
+            updateStats();
+            
+            // Update time
+            if (state.startTime > 0) {
+                const elapsed = Date.now() - state.startTime;
+                timeDisplay.textContent = `${elapsed} ms`;
+            }
+        }
+
+        function updateStats() {
+            arraySizeDisplay.textContent = state.array.length;
+            comparisonCount.textContent = state.comparisonCount;
+            swapCount.textContent = state.swapCount;
+        }
+
+        function updateInfo() {
+            const algo = state.algorithm;
+            const algoInfo = {
+                'bubble': {
+                    name: 'Bubble Sort',
+                    desc: 'Repeatedly swaps adjacent elements if they are in wrong order.',
+                    time: 'O(n²)',
+                    space: 'O(1)',
+                    detail: 'Simple but inefficient. Best for small or nearly sorted arrays.'
+                },
+                'selection': {
+                    name: 'Selection Sort',
+                    desc: 'Repeatedly finds minimum element and puts it at beginning.',
+                    time: 'O(n²)',
+                    space: 'O(1)',
+                    detail: 'Makes minimum number of swaps. Not stable.'
+                },
+                'insertion': {
+                    name: 'Insertion Sort',
+                    desc: 'Builds final array one item at a time, like sorting playing cards.',
+                    time: 'O(n²)',
+                    space: 'O(1)',
+                    detail: 'Efficient for small data, adaptive, stable.'
+                },
+                'merge': {
+                    name: 'Merge Sort',
+                    desc: 'Divide and conquer algorithm. Divides array and merges sorted halves.',
+                    time: 'O(n log n)',
+                    space: 'O(n)',
+                    detail: 'Stable, good for large datasets, uses extra space.'
+                },
+                'quick': {
+                    name: 'Quick Sort',
+                    desc: 'Divide and conquer. Picks pivot, partitions, recursively sorts.',
+                    time: 'O(n log n)',
+                    space: 'O(log n)',
+                    detail: 'Fast in practice, not stable, worst case O(n²).'
+                },
+                'heap': {
+                    name: 'Heap Sort',
+                    desc: 'Builds heap, repeatedly extracts maximum element.',
+                    time: 'O(n log n)',
+                    space: 'O(1)',
+                    detail: 'In-place, not stable, good worst-case performance.'
+                },
+                'counting': {
+                    name: 'Counting Sort',
+                    desc: 'Counts occurrences of each value, uses arithmetic for positioning.',
+                    time: 'O(n+k)',
+                    space: 'O(k)',
+                    detail: 'Non-comparison sort, works for integer keys in specific range.'
+                },
+                'radix': {
+                    name: 'Radix Sort',
+                    desc: 'Sorts numbers digit by digit from least significant to most.',
+                    time: 'O(nk)',
+                    space: 'O(n+k)',
+                    detail: 'Non-comparison sort, works for integers or strings.'
+                }
+            };
+            
+            if (algo && algoInfo[algo]) {
+                const info = algoInfo[algo];
+                currentAlgo.textContent = `Algorithm: ${info.name}`;
+                infoText.textContent = info.desc;
+                complexityText.textContent = `Time: ${info.time} | Space: ${info.space}`;
+                algorithmDesc.textContent = info.detail;
+                algoInfo.textContent = `${info.name}: ${info.desc}`;
+            } else {
+                infoText.textContent = 'Select a sorting algorithm to see its visualization and time complexity.';
+                complexityText.textContent = 'Time: - | Space: -';
+                algorithmDesc.textContent = '';
+                algoInfo.textContent = 'Select an algorithm and click "Run Sort" to begin visualization';
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        function getAlgoName(algo) {
+            const names = {
+                'bubble': 'Bubble Sort',
+                'selection': 'Selection Sort',
+                'insertion': 'Insertion Sort',
+                'merge': 'Merge Sort',
+                'quick': 'Quick Sort',
+                'heap': 'Heap Sort',
+                'counting': 'Counting Sort',
+                'radix': 'Radix Sort'
+            };
+            return names[algo] || algo;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

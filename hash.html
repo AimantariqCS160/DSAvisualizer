@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Hashing</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --accent-orange: #fbd38d;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(214, 188, 250, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-purple);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-purple);
+            border-radius: 2px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(214, 188, 250, 0.2);
+        }
+
+        button {
+            background: var(--accent-purple);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(214, 188, 250, 0.3);
+        }
+
+        button:hover {
+            background: #b794f4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(214, 188, 250, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(144, 205, 244, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Hashing Specific Styles */
+        .hash-table-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .hash-function-display {
+            background: var(--accent-purple);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 30px;
+            box-shadow: 0 3px 8px rgba(214, 188, 250, 0.4);
+        }
+
+        .hash-table {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            max-width: 1200px;
+        }
+
+        .hash-bucket {
+            width: 100px;
+            min-height: 80px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 2px solid var(--accent-blue);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s;
+        }
+
+        .hash-bucket.empty {
+            border-color: var(--border-light);
+            background: #f7fafc;
+        }
+
+        .hash-bucket.highlighted {
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 15px rgba(250, 240, 137, 0.5);
+            transform: scale(1.05);
+        }
+
+        .hash-bucket.collision {
+            border-color: var(--accent-red);
+        }
+
+        .hash-bucket.probed {
+            border-color: var(--accent-orange);
+        }
+
+        .bucket-index {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .bucket-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .hash-element {
+            width: 90%;
+            background: var(--accent-green);
+            border-radius: 6px;
+            padding: 8px 5px;
+            color: var(--text-dark);
+            font-weight: bold;
+            text-align: center;
+            font-size: 14px;
+            box-shadow: 0 2px 4px rgba(154, 230, 180, 0.3);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .hash-element.inserting {
+            background: var(--accent-purple);
+            animation: insertAnimation 0.5s ease;
+        }
+
+        .hash-element.searching {
+            background: var(--accent-yellow);
+            animation: searchAnimation 1s ease infinite;
+        }
+
+        .hash-element.deleting {
+            background: var(--accent-red);
+            animation: deleteAnimation 0.5s ease;
+        }
+
+        .hash-element.probing {
+            background: var(--accent-orange);
+            animation: probeAnimation 1s ease infinite;
+        }
+
+        @keyframes insertAnimation {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes searchAnimation {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes deleteAnimation {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(0.5); opacity: 0; }
+        }
+
+        @keyframes probeAnimation {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .key-value {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .hash-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-purple);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .collision-chain {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .chain-arrow {
+            font-size: 20px;
+            color: var(--accent-red);
+            margin: 0 5px;
+        }
+
+        .hash-visualization {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hashing-process {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .process-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 15px;
+        }
+
+        .step-value {
+            padding: 10px 15px;
+            background: var(--accent-cyan);
+            border-radius: 6px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .step-arrow {
+            font-size: 20px;
+            color: var(--accent-blue);
+            margin: 0 10px;
+        }
+
+        .probing-info {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            width: 80%;
+            text-align: center;
+            display: none;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hash-table {
+                gap: 10px;
+            }
+            .hash-bucket {
+                width: 80px;
+                min-height: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .control-row {
+                flex-direction: column;
+            }
+            .hash-bucket {
+                width: 70px;
+                min-height: 60px;
+            }
+            .hash-element {
+                padding: 6px 3px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M3 3H21V7H3V3M3 11H21V13H3V11M3 15H21V17H3V15M3 19H21V21H3V19Z" fill="white"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Hash Table Visualization</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Hash Table Configuration</div>
+                <div class="control-row">
+                    <select id="hashFunction">
+                        <option value="division">Division Method (key % size)</option>
+                        <option value="multiplication">Multiplication Method</option>
+                        <option value="universal">Universal Hashing</option>
+                    </select>
+                </div>
+                <div class="control-row">
+                    <div style="flex: 2; position: relative;">
+                        <select id="tableSize" style="width: 100%;">
+                            <option value="5">Size: 5 slots</option>
+                            <option value="6">Size: 6 slots</option>
+                            <option value="7">Size: 7 slots</option>
+                            <option value="8">Size: 8 slots</option>
+                            <option value="9">Size: 9 slots</option>
+                            <option value="10" selected>Size: 10 slots</option>
+                            <option value="11">Size: 11 slots</option>
+                        </select>
+                        <div style="position: absolute; top: -8px; left: 10px; background: var(--bg-card); padding: 0 5px; font-size: 10px; color: var(--accent-purple); font-weight: 600;">
+                            Table Size (5-11)
+                        </div>
+                    </div>
+                    <button id="resizeBtn">Resize</button>
+                </div>
+                <div class="control-row">
+                    <select id="collisionMethod">
+                        <option value="chaining">Separate Chaining</option>
+                        <option value="linear">Linear Probing</option>
+                        <option value="quadratic">Quadratic Probing</option>
+                        <option value="double">Double Hashing</option>
+                    </select>
+                </div>
+                <div style="margin-top: 8px; padding: 8px; background: rgba(214, 188, 250, 0.1); border-radius: 6px; border: 1px solid rgba(214, 188, 250, 0.3);">
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--accent-purple)">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        <span>Hash table size is limited to 5-11 slots for optimal visualization.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Hash Operations</div>
+                <div class="control-row">
+                    <input type="text" id="insertKey" placeholder="Key to insert">
+                    <input type="text" id="insertValue" placeholder="Value (optional)">
+                </div>
+                <div class="control-row">
+                    <button id="insertBtn">Insert</button>
+                    <button id="searchBtn" class="ghost">Search</button>
+                </div>
+                <div class="control-row">
+                    <input type="text" id="deleteKey" placeholder="Key to delete">
+                    <button id="deleteBtn">Delete</button>
+                </div>
+                <div class="button-group">
+                    <button id="randomInsertBtn">Insert Random</button>
+                    <button id="addDummyBtn" class="ghost">Add Dummy Data</button>
+                </div>
+                <div class="button-group">
+                    <button id="clearHashBtn">Clear Table</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Visualization Speed</div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Animation Speed:</label>
+                    <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+                </div>
+                <div class="button-group" style="margin-top: 10px;">
+                    <button id="pauseBtn">Pause</button>
+                    <button id="resumeBtn" class="ghost">Resume</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Hash Statistics</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    <div>Table Size: <span id="tableSizeValue" class="stat-value">10</span></div>
+                    <div>Elements Count: <span id="elementCount" class="stat-value">0</span></div>
+                    <div>Load Factor: <span id="loadFactor" class="stat-value">0.00</span></div>
+                    <div>Collisions: <span id="collisionCount" class="stat-value">0</span></div>
+                    <div>Probes: <span id="probeCount" class="stat-value">0</span></div>
+                    <div>Operations Count: <span id="opCount">0</span></div>
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">Hash Table Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Hash Table: Data structure that maps keys to values using a hash function. Provides O(1) average time complexity for insert, delete, and search operations.
+                </div>
+                <div id="complexityText" style="font-size: 0.8rem; color: var(--accent-purple); margin-top: 8px; font-weight: 600;">
+                    Insert/Search/Delete: O(1) avg | Space: O(n)
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Hash Table Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="hashType">Type: Separate Chaining</span> | 
+                    <span id="operationStatus">Ready</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas">
+                    <div class="hash-visualization">
+                        <div class="hash-function-display" id="hashFunctionDisplay">
+                            Hash Function: h(key) = key % 10
+                        </div>
+                        
+                        <div class="hashing-process" id="hashingProcess" style="display: none;">
+                            <div class="process-step">
+                                <div class="step-value" id="stepKey">Key</div>
+                                <div class="step-label">Input Key</div>
+                            </div>
+                            <div class="step-arrow">→</div>
+                            <div class="process-step">
+                                <div class="step-value" id="stepHash">Hash</div>
+                                <div class="step-label">Hash Function</div>
+                            </div>
+                            <div class="step-arrow">→</div>
+                            <div class="process-step">
+                                <div class="step-value" id="stepIndex">Index</div>
+                                <div class="step-label">Table Index</div>
+                            </div>
+                        </div>
+
+                        <div class="probing-info" id="probingInfo">
+                            <div id="probingDetails"></div>
+                        </div>
+                        
+                        <div id="hashTableContainer" class="hash-table-container">
+                            <!-- Hash table will be rendered here -->
+                        </div>
+                        
+                        <div class="hash-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="statElements">0</div>
+                                <div class="stat-label">Elements</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="statLoadFactor">0.00</div>
+                                <div class="stat-label">Load Factor</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="statCollisions">0</div>
+                                <div class="stat-label">Collisions</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="statProbes">0</div>
+                                <div class="stat-label">Probes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Hash Element</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Inserting</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Searching</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Deleting</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-orange);"></div>
+                        <span>Probing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue); border-color: var(--accent-blue);"></div>
+                        <span>Bucket</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red); border-color: var(--accent-red);"></div>
+                        <span>Collision Bucket</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Hash tables provide efficient key-value storage and retrieval. Insert keys to build the hash table.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            tableSize: 10,
+            hashTable: [],
+            isAnimating: false,
+            speed: 300,
+            operationsCount: 0,
+            collisionCount: 0,
+            probeCount: 0,
+            hashFunction: 'division',
+            collisionMethod: 'chaining',
+            loadFactor: 0,
+            elementCount: 0,
+            lastOperation: null,
+            highlightedBucket: -1,
+            searchingKey: null,
+            isPaused: false
+        };
+
+        const canvas = document.getElementById('canvas');
+        const hashTableContainer = document.getElementById('hashTableContainer');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const operationStatus = document.getElementById('operationStatus');
+        const hashFunctionDisplay = document.getElementById('hashFunctionDisplay');
+        const hashingProcess = document.getElementById('hashingProcess');
+        const hashType = document.getElementById('hashType');
+        const probingInfo = document.getElementById('probingInfo');
+        const probingDetails = document.getElementById('probingDetails');
+
+        // Statistics elements
+        const tableSizeValue = document.getElementById('tableSizeValue');
+        const elementCount = document.getElementById('elementCount');
+        const loadFactor = document.getElementById('loadFactor');
+        const collisionCount = document.getElementById('collisionCount');
+        const probeCount = document.getElementById('probeCount');
+        const opCount = document.getElementById('opCount');
+        const statElements = document.getElementById('statElements');
+        const statLoadFactor = document.getElementById('statLoadFactor');
+        const statCollisions = document.getElementById('statCollisions');
+        const statProbes = document.getElementById('statProbes');
+
+        // Step visualization elements
+        const stepKey = document.getElementById('stepKey');
+        const stepHash = document.getElementById('stepHash');
+        const stepIndex = document.getElementById('stepIndex');
+
+        // Dummy data for each hashing method
+        const dummyData = {
+            chaining: [
+                {key: 15, value: 'Apple'},
+                {key: 25, value: 'Banana'},
+                {key: 35, value: 'Cherry'},
+                {key: 7, value: 'Date'},
+                {key: 17, value: 'Elderberry'},
+                {key: 27, value: 'Fig'},
+                {key: 37, value: 'Grape'}
+            ],
+            linear: [
+                {key: 15, value: 'Apple'},
+                {key: 25, value: 'Banana'},
+                {key: 35, value: 'Cherry'},
+                {key: 45, value: 'Date'},
+                {key: 55, value: 'Elderberry'},
+                {key: 65, value: 'Fig'},
+                {key: 75, value: 'Grape'}
+            ],
+            quadratic: [
+                {key: 10, value: 'Apple'},
+                {key: 20, value: 'Banana'},
+                {key: 30, value: 'Cherry'},
+                {key: 40, value: 'Date'},
+                {key: 50, value: 'Elderberry'},
+                {key: 60, value: 'Fig'},
+                {key: 70, value: 'Grape'}
+            ],
+            double: [
+                {key: 12, value: 'Apple'},
+                {key: 22, value: 'Banana'},
+                {key: 32, value: 'Cherry'},
+                {key: 42, value: 'Date'},
+                {key: 52, value: 'Elderberry'},
+                {key: 62, value: 'Fig'},
+                {key: 72, value: 'Grape'}
+            ]
+        };
+
+        function init() {
+            setupEventListeners();
+            initializeHashTable();
+            render();
+            updateStats();
+            addDummyData(); // Add dummy data on initialization
+        }
+
+        function setupEventListeners() {
+            document.getElementById('insertBtn').addEventListener('click', insert);
+            document.getElementById('searchBtn').addEventListener('click', search);
+            document.getElementById('deleteBtn').addEventListener('click', deleteKey);
+            document.getElementById('randomInsertBtn').addEventListener('click', insertRandom);
+            document.getElementById('addDummyBtn').addEventListener('click', addDummyData);
+            document.getElementById('clearHashBtn').addEventListener('click', clearHashTable);
+            document.getElementById('resizeBtn').addEventListener('click', resizeTable);
+            document.getElementById('pauseBtn').addEventListener('click', pauseAnimation);
+            document.getElementById('resumeBtn').addEventListener('click', resumeAnimation);
+            
+            document.getElementById('hashFunction').addEventListener('change', function() {
+                state.hashFunction = this.value;
+                updateHashFunctionDisplay();
+                updateStatus(`Hash function changed to ${this.options[this.selectedIndex].text}`);
+            });
+            
+            document.getElementById('collisionMethod').addEventListener('change', function() {
+                state.collisionMethod = this.value;
+                updateCollisionMethodDisplay();
+                // Add dummy data for the new method
+                addDummyData();
+            });
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                state.speed = parseInt(this.value);
+            });
+            
+            document.getElementById('insertKey').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') insert();
+            });
+            
+            document.getElementById('deleteKey').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') deleteKey();
+            });
+        }
+
+        function initializeHashTable() {
+            state.tableSize = parseInt(document.getElementById('tableSize').value) || 10;
+            
+            // Initialize hash table based on collision method
+            if (state.collisionMethod === 'chaining') {
+                state.hashTable = Array(state.tableSize).fill().map(() => []);
+            } else {
+                // For probing methods, each slot can hold one element
+                state.hashTable = Array(state.tableSize).fill().map(() => ({key: null, value: null}));
+            }
+            
+            state.collisionCount = 0;
+            state.probeCount = 0;
+            state.operationsCount = 0;
+            state.elementCount = 0;
+            state.loadFactor = 0;
+            
+            updateStats();
+        }
+
+        async function addDummyData() {
+            if (state.isAnimating) return;
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Adding dummy data...';
+            
+            // Clear current table
+            initializeHashTable();
+            render();
+            
+            const data = dummyData[state.collisionMethod];
+            
+            // Insert dummy data one by one with animation
+            for (const item of data) {
+                document.getElementById('insertKey').value = item.key;
+                document.getElementById('insertValue').value = item.value;
+                
+                // Use a simplified insert without full animation for speed
+                await simplifiedInsert(item.key, item.value);
+                await sleep(state.speed / 2);
+            }
+            
+            updateStatus(`Added ${data.length} dummy elements for ${state.collisionMethod} method`);
+            updateAction('Added dummy data');
+            
+            state.isAnimating = false;
+            operationStatus.textContent = 'Ready';
+        }
+
+        async function simplifiedInsert(key, value) {
+            const hashResult = hashFunction(key);
+            
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    const bucket = state.hashTable[hashResult];
+                    if (bucket.length > 0) state.collisionCount++;
+                    bucket.push({key: key, value: value});
+                    state.elementCount++;
+                    break;
+                    
+                case 'linear':
+                    for (let i = 0; i < state.tableSize; i++) {
+                        const index = (hashResult + i) % state.tableSize;
+                        if (state.hashTable[index].key === null) {
+                            state.hashTable[index] = {key: key, value: value};
+                            state.elementCount++;
+                            if (i > 0) {
+                                state.collisionCount++;
+                                state.probeCount += i + 1;
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                    
+                case 'quadratic':
+                    for (let i = 0; i < state.tableSize; i++) {
+                        const index = (hashResult + i * i) % state.tableSize;
+                        if (state.hashTable[index].key === null) {
+                            state.hashTable[index] = {key: key, value: value};
+                            state.elementCount++;
+                            if (i > 0) {
+                                state.collisionCount++;
+                                state.probeCount += i + 1;
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                    
+                case 'double':
+                    const hash2 = hashFunction2(key);
+                    for (let i = 0; i < state.tableSize; i++) {
+                        const index = (hashResult + i * hash2) % state.tableSize;
+                        if (state.hashTable[index].key === null) {
+                            state.hashTable[index] = {key: key, value: value};
+                            state.elementCount++;
+                            if (i > 0) {
+                                state.collisionCount++;
+                                state.probeCount += i + 1;
+                            }
+                            break;
+                        }
+                    }
+                    break;
+            }
+            
+            state.loadFactor = state.elementCount / state.tableSize;
+            state.operationsCount++;
+            updateStats();
+            render();
+        }
+
+        function hashFunction(key) {
+            // Convert string keys to numeric hash
+            let numericKey;
+            if (typeof key === 'string') {
+                // Simple string hash
+                numericKey = 0;
+                for (let i = 0; i < key.length; i++) {
+                    numericKey = (numericKey * 31 + key.charCodeAt(i)) % 1000;
+                }
+            } else {
+                numericKey = key;
+            }
+            
+            // Apply selected hash function
+            switch(state.hashFunction) {
+                case 'division':
+                    return numericKey % state.tableSize;
+                case 'multiplication':
+                    const A = 0.6180339887; // Golden ratio
+                    return Math.floor(state.tableSize * ((numericKey * A) % 1));
+                case 'universal':
+                    // Simple universal hash: (a*key + b) % p % tableSize
+                    const a = 31, b = 7, p = 1009;
+                    return ((a * numericKey + b) % p) % state.tableSize;
+                default:
+                    return numericKey % state.tableSize;
+            }
+        }
+
+        // Second hash function for double hashing
+        function hashFunction2(key) {
+            let numericKey;
+            if (typeof key === 'string') {
+                numericKey = 0;
+                for (let i = 0; i < key.length; i++) {
+                    numericKey = (numericKey * 37 + key.charCodeAt(i)) % 1000;
+                }
+            } else {
+                numericKey = key;
+            }
+            return 1 + (numericKey % (state.tableSize - 1));
+        }
+
+        async function insert() {
+            if (state.isAnimating) return;
+            
+            const keyInput = document.getElementById('insertKey');
+            const valueInput = document.getElementById('insertValue');
+            let key = keyInput.value.trim();
+            let value = valueInput.value.trim();
+            
+            if (!key) {
+                updateStatus('Please enter a key to insert');
+                return;
+            }
+            
+            // Convert numeric keys
+            if (!isNaN(key) && key !== '') {
+                key = Number(key);
+            }
+            
+            // Check if key already exists
+            if (keyExists(key)) {
+                updateStatus(`Key ${key} already exists in the hash table`);
+                return;
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Inserting...';
+            
+            // Show hashing process visualization
+            hashingProcess.style.display = 'flex';
+            stepKey.textContent = key;
+            stepHash.textContent = `h(${key})`;
+            
+            const hashResult = hashFunction(key);
+            stepIndex.textContent = hashResult;
+            
+            // Highlight the hashing steps
+            await sleep(state.speed);
+            
+            let inserted = false;
+            let probes = 0;
+            let currentIndex = hashResult;
+            
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    inserted = await insertChaining(key, value, hashResult);
+                    break;
+                case 'linear':
+                    inserted = await insertLinearProbing(key, value, hashResult);
+                    break;
+                case 'quadratic':
+                    inserted = await insertQuadraticProbing(key, value, hashResult);
+                    break;
+                case 'double':
+                    inserted = await insertDoubleHashing(key, value, hashResult);
+                    break;
+            }
+            
+            if (inserted) {
+                state.elementCount++;
+                state.operationsCount++;
+                state.loadFactor = state.elementCount / state.tableSize;
+                
+                updateStats();
+                updateAction(`Inserted key ${key}`);
+                
+                keyInput.value = '';
+                valueInput.value = '';
+                keyInput.focus();
+            }
+            
+            state.highlightedBucket = -1;
+            hashingProcess.style.display = 'none';
+            probingInfo.style.display = 'none';
+            render();
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        function keyExists(key) {
+            const hashResult = hashFunction(key);
+            
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    const bucket = state.hashTable[hashResult];
+                    for (const element of bucket) {
+                        if (element.key == key) return true;
+                    }
+                    return false;
+                    
+                default:
+                    // For probing methods
+                    if (state.collisionMethod === 'linear') {
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashResult + i) % state.tableSize;
+                            if (state.hashTable[index].key === key) return true;
+                            if (state.hashTable[index].key === null) break;
+                        }
+                    } else if (state.collisionMethod === 'quadratic') {
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashResult + i * i) % state.tableSize;
+                            if (state.hashTable[index].key === key) return true;
+                            if (state.hashTable[index].key === null) break;
+                        }
+                    } else if (state.collisionMethod === 'double') {
+                        const hash2 = hashFunction2(key);
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashResult + i * hash2) % state.tableSize;
+                            if (state.hashTable[index].key === key) return true;
+                            if (state.hashTable[index].key === null) break;
+                        }
+                    }
+                    return false;
+            }
+        }
+
+        async function insertChaining(key, value, hashIndex) {
+            const bucket = state.hashTable[hashIndex];
+            
+            // Highlight the bucket
+            state.highlightedBucket = hashIndex;
+            render();
+            await sleep(state.speed);
+            
+            // Check for collision
+            const hadCollision = bucket.length > 0;
+            
+            // Add to hash table
+            bucket.push({key: key, value: value || `Value${key}`});
+            
+            if (hadCollision) {
+                state.collisionCount++;
+                updateStatus(`Inserted key ${key} at index ${hashIndex} (collision occurred)`);
+            } else {
+                updateStatus(`Inserted key ${key} at index ${hashIndex}`);
+            }
+            
+            // Render with insertion animation
+            renderWithAnimation('insert', hashIndex, bucket.length - 1);
+            await sleep(state.speed);
+            
+            return true;
+        }
+
+        async function insertLinearProbing(key, value, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Check if table is full
+            if (state.elementCount >= state.tableSize) {
+                updateStatus('Hash table is full! Cannot insert more elements.');
+                return false;
+            }
+            
+            // Find empty slot using linear probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Linear Probing: h(key) = (${hashIndex} + ${i}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                if (state.hashTable[index].key === null) {
+                    // Found empty slot
+                    state.hashTable[index] = {key: key, value: value || `Value${key}`};
+                    
+                    if (i > 0) {
+                        state.collisionCount++;
+                        state.probeCount += probes;
+                        updateStatus(`Inserted key ${key} at index ${index} after ${probes} probes (collision resolved)`);
+                    } else {
+                        updateStatus(`Inserted key ${key} at index ${index}`);
+                    }
+                    
+                    renderWithAnimation('insert', index, 0);
+                    await sleep(state.speed);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function insertQuadraticProbing(key, value, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Check if table is full
+            if (state.elementCount >= state.tableSize) {
+                updateStatus('Hash table is full! Cannot insert more elements.');
+                return false;
+            }
+            
+            // Find empty slot using quadratic probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Quadratic Probing: h(key) = (${hashIndex} + ${i}²) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                if (state.hashTable[index].key === null) {
+                    // Found empty slot
+                    state.hashTable[index] = {key: key, value: value || `Value${key}`};
+                    
+                    if (i > 0) {
+                        state.collisionCount++;
+                        state.probeCount += probes;
+                        updateStatus(`Inserted key ${key} at index ${index} after ${probes} probes (collision resolved)`);
+                    } else {
+                        updateStatus(`Inserted key ${key} at index ${index}`);
+                    }
+                    
+                    renderWithAnimation('insert', index, 0);
+                    await sleep(state.speed);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function insertDoubleHashing(key, value, hashIndex) {
+            let probes = 0;
+            const hash2 = hashFunction2(key);
+            
+            probingInfo.style.display = 'block';
+            
+            // Check if table is full
+            if (state.elementCount >= state.tableSize) {
+                updateStatus('Hash table is full! Cannot insert more elements.');
+                return false;
+            }
+            
+            // Find empty slot using double hashing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * hash2) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Double Hashing: h₁(key) = ${hashIndex}, h₂(key) = ${hash2}<br>Position: (${hashIndex} + ${i} × ${hash2}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                if (state.hashTable[index].key === null) {
+                    // Found empty slot
+                    state.hashTable[index] = {key: key, value: value || `Value${key}`};
+                    
+                    if (i > 0) {
+                        state.collisionCount++;
+                        state.probeCount += probes;
+                        updateStatus(`Inserted key ${key} at index ${index} after ${probes} probes (collision resolved)`);
+                    } else {
+                        updateStatus(`Inserted key ${key} at index ${index}`);
+                    }
+                    
+                    renderWithAnimation('insert', index, 0);
+                    await sleep(state.speed);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function search() {
+            if (state.isAnimating) return;
+            
+            const keyInput = document.getElementById('insertKey');
+            let key = keyInput.value.trim();
+            
+            if (!key) {
+                updateStatus('Please enter a key to search');
+                return;
+            }
+            
+            // Convert numeric keys
+            if (!isNaN(key) && key !== '') {
+                key = Number(key);
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Searching...';
+            
+            // Show hashing process visualization
+            hashingProcess.style.display = 'flex';
+            stepKey.textContent = key;
+            stepHash.textContent = `h(${key})`;
+            
+            const hashResult = hashFunction(key);
+            stepIndex.textContent = hashResult;
+            
+            // Highlight the hashing steps
+            await sleep(state.speed);
+            
+            let found = false;
+            
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    found = await searchChaining(key, hashResult);
+                    break;
+                case 'linear':
+                    found = await searchLinearProbing(key, hashResult);
+                    break;
+                case 'quadratic':
+                    found = await searchQuadraticProbing(key, hashResult);
+                    break;
+                case 'double':
+                    found = await searchDoubleHashing(key, hashResult);
+                    break;
+            }
+            
+            if (!found) {
+                updateStatus(`Key ${key} not found in hash table`);
+            }
+            
+            state.operationsCount++;
+            updateStats();
+            updateAction(`Searched for key ${key}`);
+            
+            state.highlightedBucket = -1;
+            hashingProcess.style.display = 'none';
+            probingInfo.style.display = 'none';
+            render();
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function searchChaining(key, hashIndex) {
+            const bucket = state.hashTable[hashIndex];
+            
+            // Highlight the bucket
+            state.highlightedBucket = hashIndex;
+            render();
+            await sleep(state.speed);
+            
+            // Search through the bucket
+            for (let i = 0; i < bucket.length; i++) {
+                if (bucket[i].key == key) {
+                    updateStatus(`Found key ${key} at index ${hashIndex}, position ${i} in bucket`);
+                    renderWithAnimation('search', hashIndex, i);
+                    await sleep(state.speed * 2);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function searchLinearProbing(key, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Search using linear probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Linear Probing Search: (${hashIndex} + ${i}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    updateStatus(`Found key ${key} at index ${index} after ${probes} probes`);
+                    renderWithAnimation('search', index, 0);
+                    await sleep(state.speed * 2);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function searchQuadraticProbing(key, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Search using quadratic probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Quadratic Probing Search: (${hashIndex} + ${i}²) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    updateStatus(`Found key ${key} at index ${index} after ${probes} probes`);
+                    renderWithAnimation('search', index, 0);
+                    await sleep(state.speed * 2);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function searchDoubleHashing(key, hashIndex) {
+            let probes = 0;
+            const hash2 = hashFunction2(key);
+            
+            probingInfo.style.display = 'block';
+            
+            // Search using double hashing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * hash2) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Double Hashing Search: (${hashIndex} + ${i} × ${hash2}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    updateStatus(`Found key ${key} at index ${index} after ${probes} probes`);
+                    renderWithAnimation('search', index, 0);
+                    await sleep(state.speed * 2);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function deleteKey() {
+            if (state.isAnimating) return;
+            
+            const keyInput = document.getElementById('deleteKey');
+            let key = keyInput.value.trim();
+            
+            if (!key) {
+                updateStatus('Please enter a key to delete');
+                return;
+            }
+            
+            // Convert numeric keys
+            if (!isNaN(key) && key !== '') {
+                key = Number(key);
+            }
+            
+            state.isAnimating = true;
+            operationStatus.textContent = 'Deleting...';
+            
+            // Show hashing process visualization
+            hashingProcess.style.display = 'flex';
+            stepKey.textContent = key;
+            stepHash.textContent = `h(${key})`;
+            
+            const hashResult = hashFunction(key);
+            stepIndex.textContent = hashResult;
+            
+            // Highlight the hashing steps
+            await sleep(state.speed);
+            
+            let deleted = false;
+            
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    deleted = await deleteChaining(key, hashResult);
+                    break;
+                case 'linear':
+                    deleted = await deleteLinearProbing(key, hashResult);
+                    break;
+                case 'quadratic':
+                    deleted = await deleteQuadraticProbing(key, hashResult);
+                    break;
+                case 'double':
+                    deleted = await deleteDoubleHashing(key, hashResult);
+                    break;
+            }
+            
+            if (deleted) {
+                state.elementCount--;
+                state.operationsCount++;
+                state.loadFactor = state.elementCount / state.tableSize;
+                
+                updateStatus(`Deleted key ${key}`);
+                updateStats();
+                updateAction(`Deleted key ${key}`);
+                
+                keyInput.value = '';
+            } else {
+                updateStatus(`Key ${key} not found in hash table`);
+            }
+            
+            state.highlightedBucket = -1;
+            hashingProcess.style.display = 'none';
+            probingInfo.style.display = 'none';
+            render();
+            
+            operationStatus.textContent = 'Ready';
+            state.isAnimating = false;
+        }
+
+        async function deleteChaining(key, hashIndex) {
+            const bucket = state.hashTable[hashIndex];
+            
+            // Highlight the bucket
+            state.highlightedBucket = hashIndex;
+            render();
+            await sleep(state.speed);
+            
+            // Find and delete the key
+            for (let i = 0; i < bucket.length; i++) {
+                if (bucket[i].key == key) {
+                    // Animate deletion
+                    renderWithAnimation('delete', hashIndex, i);
+                    await sleep(state.speed);
+                    
+                    // Remove from bucket
+                    bucket.splice(i, 1);
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function deleteLinearProbing(key, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Search and delete using linear probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Linear Probing Delete: (${hashIndex} + ${i}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    // Animate deletion
+                    renderWithAnimation('delete', index, 0);
+                    await sleep(state.speed);
+                    
+                    // Mark as deleted (tombstone for probing methods)
+                    state.hashTable[index] = {key: null, value: null};
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function deleteQuadraticProbing(key, hashIndex) {
+            let probes = 0;
+            
+            probingInfo.style.display = 'block';
+            
+            // Search and delete using quadratic probing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * i) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Quadratic Probing Delete: (${hashIndex} + ${i}²) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    // Animate deletion
+                    renderWithAnimation('delete', index, 0);
+                    await sleep(state.speed);
+                    
+                    // Mark as deleted
+                    state.hashTable[index] = {key: null, value: null};
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function deleteDoubleHashing(key, hashIndex) {
+            let probes = 0;
+            const hash2 = hashFunction2(key);
+            
+            probingInfo.style.display = 'block';
+            
+            // Search and delete using double hashing
+            for (let i = 0; i < state.tableSize; i++) {
+                probes++;
+                const index = (hashIndex + i * hash2) % state.tableSize;
+                
+                // Show probing visualization
+                probingDetails.innerHTML = `Double Hashing Delete: (${hashIndex} + ${i} × ${hash2}) mod ${state.tableSize} = ${index}<br>Probes: ${probes}`;
+                state.highlightedBucket = index;
+                renderWithProbing(index);
+                await sleep(state.speed / 2);
+                
+                const element = state.hashTable[index];
+                
+                if (element.key === null) {
+                    // Empty slot found, key doesn't exist
+                    break;
+                }
+                
+                if (element.key == key) {
+                    // Animate deletion
+                    renderWithAnimation('delete', index, 0);
+                    await sleep(state.speed);
+                    
+                    // Mark as deleted
+                    state.hashTable[index] = {key: null, value: null};
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        async function insertRandom() {
+            if (state.isAnimating) return;
+            
+            const randomKey = Math.floor(Math.random() * 100) + 1;
+            const randomValue = `Value${randomKey}`;
+            
+            document.getElementById('insertKey').value = randomKey;
+            document.getElementById('insertValue').value = randomValue;
+            
+            await insert();
+        }
+
+        function clearHashTable() {
+            initializeHashTable();
+            render();
+            
+            updateStatus('Hash table cleared');
+            updateAction('Cleared hash table');
+        }
+
+        function resizeTable() {
+            const newSize = parseInt(document.getElementById('tableSize').value);
+            
+            // No need for validation since the select only has valid options (5-11)
+            
+            if (newSize === state.tableSize) {
+                updateStatus('Table size is already ' + newSize);
+                return;
+            }
+            
+            // Save current elements
+            const allElements = [];
+            if (state.collisionMethod === 'chaining') {
+                for (let i = 0; i < state.tableSize; i++) {
+                    allElements.push(...state.hashTable[i]);
+                }
+            } else {
+                for (let i = 0; i < state.tableSize; i++) {
+                    if (state.hashTable[i].key !== null) {
+                        allElements.push(state.hashTable[i]);
+                    }
+                }
+            }
+            
+            state.tableSize = newSize;
+            initializeHashTable();
+            
+            // Reinsert all elements
+            allElements.forEach(item => {
+                if (state.collisionMethod === 'chaining') {
+                    const index = hashFunction(item.key);
+                    state.hashTable[index].push(item);
+                    state.elementCount++;
+                    if (state.hashTable[index].length > 1) state.collisionCount++;
+                } else {
+                    // For probing methods, we need to rehash properly
+                    const hashIndex = hashFunction(item.key);
+                    
+                    if (state.collisionMethod === 'linear') {
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashIndex + i) % state.tableSize;
+                            if (state.hashTable[index].key === null) {
+                                state.hashTable[index] = item;
+                                state.elementCount++;
+                                if (i > 0) state.collisionCount++;
+                                break;
+                            }
+                        }
+                    } else if (state.collisionMethod === 'quadratic') {
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashIndex + i * i) % state.tableSize;
+                            if (state.hashTable[index].key === null) {
+                                state.hashTable[index] = item;
+                                state.elementCount++;
+                                if (i > 0) state.collisionCount++;
+                                break;
+                            }
+                        }
+                    } else if (state.collisionMethod === 'double') {
+                        const hash2 = hashFunction2(item.key);
+                        for (let i = 0; i < state.tableSize; i++) {
+                            const index = (hashIndex + i * hash2) % state.tableSize;
+                            if (state.hashTable[index].key === null) {
+                                state.hashTable[index] = item;
+                                state.elementCount++;
+                                if (i > 0) state.collisionCount++;
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+            
+            state.loadFactor = state.elementCount / state.tableSize;
+            state.operationsCount++;
+            
+            updateStats();
+            render();
+            updateHashFunctionDisplay();
+            
+            updateStatus(`Hash table resized to ${newSize} slots`);
+            updateAction(`Resized table to ${newSize}`);
+        }
+
+        function render() {
+            hashTableContainer.innerHTML = '';
+            
+            const tableDiv = document.createElement('div');
+            tableDiv.className = 'hash-table';
+            
+            for (let i = 0; i < state.tableSize; i++) {
+                const bucketDiv = document.createElement('div');
+                bucketDiv.className = 'hash-bucket';
+                
+                if (i === state.highlightedBucket) {
+                    bucketDiv.classList.add('highlighted');
+                }
+                
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'bucket-index';
+                indexDiv.textContent = `Index ${i}`;
+                bucketDiv.appendChild(indexDiv);
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'bucket-content';
+                
+                if (state.collisionMethod === 'chaining') {
+                    const bucket = state.hashTable[i];
+                    
+                    if (bucket.length === 0) {
+                        bucketDiv.classList.add('empty');
+                    }
+                    
+                    if (bucket.length > 1) {
+                        bucketDiv.classList.add('collision');
+                    }
+                    
+                    for (let j = 0; j < bucket.length; j++) {
+                        const element = bucket[j];
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'hash-element';
+                        elementDiv.textContent = element.key;
+                        
+                        const valueDiv = document.createElement('div');
+                        valueDiv.className = 'key-value';
+                        valueDiv.textContent = element.value || `Value${element.key}`;
+                        
+                        elementDiv.appendChild(valueDiv);
+                        contentDiv.appendChild(elementDiv);
+                    }
+                } else {
+                    const element = state.hashTable[i];
+                    
+                    if (element.key === null) {
+                        bucketDiv.classList.add('empty');
+                    } else {
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'hash-element';
+                        elementDiv.textContent = element.key;
+                        
+                        const valueDiv = document.createElement('div');
+                        valueDiv.className = 'key-value';
+                        valueDiv.textContent = element.value || `Value${element.key}`;
+                        
+                        elementDiv.appendChild(valueDiv);
+                        contentDiv.appendChild(elementDiv);
+                        
+                        // Check if this position had a collision (not at hash index)
+                        const hashIndex = hashFunction(element.key);
+                        if (i !== hashIndex) {
+                            bucketDiv.classList.add('probed');
+                        }
+                    }
+                }
+                
+                bucketDiv.appendChild(contentDiv);
+                tableDiv.appendChild(bucketDiv);
+            }
+            
+            hashTableContainer.appendChild(tableDiv);
+        }
+
+        function renderWithAnimation(animationType, bucketIndex, elementIndex) {
+            hashTableContainer.innerHTML = '';
+            
+            const tableDiv = document.createElement('div');
+            tableDiv.className = 'hash-table';
+            
+            for (let i = 0; i < state.tableSize; i++) {
+                const bucketDiv = document.createElement('div');
+                bucketDiv.className = 'hash-bucket';
+                
+                if (i === bucketIndex) {
+                    bucketDiv.classList.add('highlighted');
+                }
+                
+                const indexDiv = document.createElement('div');
+                indexDiv.className = 'bucket-index';
+                indexDiv.textContent = `Index ${i}`;
+                bucketDiv.appendChild(indexDiv);
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'bucket-content';
+                
+                if (state.collisionMethod === 'chaining') {
+                    const bucket = state.hashTable[i];
+                    
+                    if (bucket.length === 0) {
+                        bucketDiv.classList.add('empty');
+                    }
+                    
+                    if (bucket.length > 1) {
+                        bucketDiv.classList.add('collision');
+                    }
+                    
+                    for (let j = 0; j < bucket.length; j++) {
+                        const element = bucket[j];
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'hash-element';
+                        elementDiv.textContent = element.key;
+                        
+                        const valueDiv = document.createElement('div');
+                        valueDiv.className = 'key-value';
+                        valueDiv.textContent = element.value || `Value${element.key}`;
+                        
+                        if (i === bucketIndex && j === elementIndex) {
+                            elementDiv.classList.add(animationType);
+                        }
+                        
+                        elementDiv.appendChild(valueDiv);
+                        contentDiv.appendChild(elementDiv);
+                    }
+                } else {
+                    const element = state.hashTable[i];
+                    
+                    if (element.key === null) {
+                        bucketDiv.classList.add('empty');
+                    } else {
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = 'hash-element';
+                        elementDiv.textContent = element.key;
+                        
+                        const valueDiv = document.createElement('div');
+                        valueDiv.className = 'key-value';
+                        valueDiv.textContent = element.value || `Value${element.key}`;
+                        
+                        if (i === bucketIndex) {
+                            elementDiv.classList.add(animationType);
+                        }
+                        
+                        // Check if this position had a collision (not at hash index)
+                        const hashIndex = hashFunction(element.key);
+                        if (i !== hashIndex) {
+                            bucketDiv.classList.add('probed');
+                        }
+                        
+                        elementDiv.appendChild(valueDiv);
+                        contentDiv.appendChild(elementDiv);
+                    }
+                }
+                
+                bucketDiv.appendChild(contentDiv);
+                tableDiv.appendChild(bucketDiv);
+            }
+            
+            hashTableContainer.appendChild(tableDiv);
+        }
+
+        function renderWithProbing(bucketIndex) {
+            renderWithAnimation('probing', bucketIndex, 0);
+        }
+
+        function updateStats() {
+            tableSizeValue.textContent = state.tableSize;
+            elementCount.textContent = state.elementCount;
+            loadFactor.textContent = state.loadFactor.toFixed(2);
+            collisionCount.textContent = state.collisionCount;
+            probeCount.textContent = state.probeCount;
+            opCount.textContent = state.operationsCount;
+            
+            // Update visual stats
+            statElements.textContent = state.elementCount;
+            statLoadFactor.textContent = state.loadFactor.toFixed(2);
+            statCollisions.textContent = state.collisionCount;
+            statProbes.textContent = state.probeCount;
+        }
+
+        function updateHashFunctionDisplay() {
+            switch(state.hashFunction) {
+                case 'division':
+                    hashFunctionDisplay.textContent = `Hash Function: h(key) = key % ${state.tableSize}`;
+                    break;
+                case 'multiplication':
+                    hashFunctionDisplay.textContent = `Hash Function: h(key) = floor(${state.tableSize} * ((key * φ) mod 1))`;
+                    break;
+                case 'universal':
+                    hashFunctionDisplay.textContent = `Hash Function: h(key) = ((31*key + 7) mod 1009) mod ${state.tableSize}`;
+                    break;
+            }
+        }
+
+        function updateCollisionMethodDisplay() {
+            switch(state.collisionMethod) {
+                case 'chaining':
+                    hashType.textContent = 'Type: Separate Chaining';
+                    break;
+                case 'linear':
+                    hashType.textContent = 'Type: Linear Probing';
+                    break;
+                case 'quadratic':
+                    hashType.textContent = 'Type: Quadratic Probing';
+                    break;
+                case 'double':
+                    hashType.textContent = 'Type: Double Hashing';
+                    break;
+            }
+            
+            // Reinitialize table when collision method changes
+            initializeHashTable();
+            render();
+            updateStatus(`Switched to ${hashType.textContent}`);
+        }
+
+        function pauseAnimation() {
+            state.isPaused = true;
+            updateStatus('Animation paused');
+        }
+
+        function resumeAnimation() {
+            state.isPaused = false;
+            updateStatus('Animation resumed');
+        }
+
+        async function sleep(ms) {
+            if (state.isPaused) {
+                // Wait in a loop until resumed
+                while (state.isPaused) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

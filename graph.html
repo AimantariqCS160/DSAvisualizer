@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA Visualizer - Graph</title>
+    <style>
+        :root {
+            --bg-light: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-dark: #2d3748;
+            --text-muted: #718096;
+            --accent-blue: #90cdf4;
+            --accent-green: #9ae6b4;
+            --accent-red: #feb2b2;
+            --accent-yellow: #faf089;
+            --accent-purple: #d6bcfa;
+            --accent-pink: #fed7e2;
+            --accent-cyan: #9decf9;
+            --border-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--text-dark);
+            box-shadow: 0 2px 8px rgba(144, 205, 244, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .logo-text .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-purple);
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: var(--accent-purple);
+            border-radius: 2px;
+        }
+
+        select, input, button {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 6px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-light);
+            color: var(--text-dark);
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(214, 188, 250, 0.2);
+        }
+
+        button {
+            background: var(--accent-purple);
+            border: none;
+            color: var(--text-dark);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(214, 188, 250, 0.3);
+        }
+
+        button:hover {
+            background: #b794f4;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(214, 188, 250, 0.4);
+        }
+
+        button.ghost {
+            background: transparent;
+            border: 1px solid var(--accent-blue);
+            color: var(--text-muted);
+            box-shadow: none;
+        }
+
+        button.ghost:hover {
+            background: rgba(144, 205, 244, 0.1);
+            color: var(--text-dark);
+        }
+
+        .control-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-row input {
+            flex: 2;
+        }
+
+        .control-row button {
+            flex: 1;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .button-group button {
+            flex: 1;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: var(--bg-light);
+        }
+
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .current-ds {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #fdfcfb 0%, #f5f7fa 100%);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            min-width: 800px;
+            min-height: 600px;
+        }
+
+        .legend {
+            padding: 15px 20px;
+            border-top: 1px solid var(--border-light);
+            background: var(--bg-card);
+            flex-shrink: 0;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dark);
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-bar {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-light);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .node-graph {
+            fill: var(--accent-blue);
+        }
+
+        .node-highlight {
+            fill: var(--accent-yellow) !important;
+        }
+
+        .node-visited {
+            fill: var(--accent-green) !important;
+        }
+
+        .node-start {
+            fill: var(--accent-red) !important;
+        }
+
+        .node-path {
+            fill: var(--accent-purple) !important;
+        }
+
+        .node-circle {
+            stroke: rgba(255, 255, 255, 0.5);
+            stroke-width: 2;
+            r: 28;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            cursor: pointer;
+        }
+
+        .node-text {
+            fill: var(--text-dark);
+            font-size: 14px;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: central;
+            pointer-events: none;
+        }
+
+        .edge-line {
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            fill: none;
+            opacity: 0.7;
+        }
+
+        .edge-highlight {
+            stroke: var(--accent-purple);
+            stroke-width: 3;
+            opacity: 0.9;
+        }
+
+        .edge-text {
+            fill: var(--text-muted);
+            font-size: 12px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+        }
+
+        .arrowhead {
+            fill: var(--accent-cyan);
+        }
+
+        .arrowhead-highlight {
+            fill: var(--accent-purple);
+        }
+
+        .canvas-wrapper::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-track {
+            background: var(--bg-light);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb {
+            background: var(--accent-purple);
+            border-radius: 5px;
+        }
+
+        .canvas-wrapper::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-blue);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+            .legend-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .legend-grid {
+                grid-template-columns: 1fr;
+            }
+            .control-row {
+                flex-direction: column;
+            }
+        }
+
+        .graph-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .graph-controls button {
+            flex: 1;
+            min-width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+                        <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" fill="none"/>
+                        <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" fill="none"/>
+                    </svg>
+                </div>
+                <div class="logo-text">
+                    <h1>DSA Visualizer</h1>
+                    <div class="subtitle">Graph Algorithms</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Graph Type</div>
+                <select id="graphType">
+                    <option value="undirected">Undirected Graph</option>
+                    <option value="directed">Directed Graph</option>
+                </select>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Add Node</div>
+                <div class="control-row">
+                    <input type="text" id="nodeLabel" placeholder="Node Label (e.g., A)">
+                    <button id="addNodeBtn">Add Node</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Add Edge</div>
+                <div class="control-row">
+                    <input type="text" id="edgeFrom" placeholder="From Node">
+                    <input type="text" id="edgeTo" placeholder="To Node">
+                </div>
+                <div class="control-row">
+                    <input type="number" id="edgeWeight" placeholder="Weight" value="1" min="1" max="100">
+                    <button id="addEdgeBtn">Add Edge</button>
+                </div>
+                <div class="graph-controls">
+                    <button id="clearGraphBtn" class="ghost">Clear Graph</button>
+                    <button id="randomGraphBtn">Random Graph</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Graph Algorithms</div>
+                <select id="algoSelect">
+                    <option value="">Select Algorithm</option>
+                    <option value="bfs">Breadth-First Search (BFS)</option>
+                    <option value="dfs">Depth-First Search (DFS)</option>
+                    <option value="prim">Prim's Algorithm (MST)</option>
+                    <option value="kruskal">Kruskal's Algorithm</option>
+                </select>
+                <div class="control-row" style="margin-top: 10px;">
+                    <input type="text" id="startNode" placeholder="Start Node" value="A">
+                    <button id="runAlgoBtn">Run Algorithm</button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label style="font-size: 0.85rem;">Speed:</label>
+                    <input type="range" id="speedSlider" min="50" max="1000" value="300" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: auto;">
+                <div class="section-title">Graph Information</div>
+                <div id="infoText" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                    Graph: Collection of vertices (nodes) connected by edges. Can be directed/undirected, weighted/unweighted.
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">
+                    <div id="graphStats">Nodes: 0 | Edges: 0</div>
+                    <div id="graphTypeInfo">Type: Undirected</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div class="current-ds">Graph Visualization</div>
+                <div style="color: var(--text-muted); font-size: 0.9rem;">
+                    <span id="selectedNode">Selected: None</span> | 
+                    <span id="algorithmStatus">Ready</span>
+                </div>
+            </div>
+
+            <div class="canvas-wrapper">
+                <div id="canvas"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-blue);"></div>
+                        <span>Normal Node</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-yellow);"></div>
+                        <span>Current/Processing</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-green);"></div>
+                        <span>Visited</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-purple);"></div>
+                        <span>Shortest Path</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: var(--accent-red);"></div>
+                        <span>Start Node</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <span id="statusText">Click and drag nodes to move them.</span>
+                <span id="actionText">Last action: None</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const state = {
+            graphType: 'undirected',
+            algorithm: '',
+            speed: 300,
+            graph: {
+                nodes: [],
+                edges: [],
+                adjacency: {}
+            },
+            isAnimating: false,
+            highlightedNodes: new Set(),
+            visitedNodes: new Set(),
+            pathNodes: new Set(),
+            pathEdges: new Set(),
+            selectedNode: null,
+            startNode: null,
+            isDraggingNode: false,
+            dragNode: null,
+            dragStartX: 0,
+            dragStartY: 0,
+            canvasWidth: 1200,
+            canvasHeight: 800,
+            zoom: 1,
+            offsetX: 0,
+            offsetY: 0,
+            isDraggingCanvas: false,
+            dragStartCanvasX: 0,
+            dragStartCanvasY: 0,
+            startOffsetX: 0,
+            startOffsetY: 0
+        };
+
+        const canvas = document.getElementById('canvas');
+        const statusText = document.getElementById('statusText');
+        const actionText = document.getElementById('actionText');
+        const infoText = document.getElementById('infoText');
+        const complexityText = document.getElementById('complexityText');
+        const graphStats = document.getElementById('graphStats');
+        const graphTypeInfo = document.getElementById('graphTypeInfo');
+        const selectedNode = document.getElementById('selectedNode');
+        const algorithmStatus = document.getElementById('algorithmStatus');
+
+        class GraphNode {
+            constructor(id, x, y) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.radius = 28;
+                this.color = 'node-graph';
+                this.isStart = false;
+            }
+        }
+
+        class GraphEdge {
+            constructor(from, to, weight = 1) {
+                this.from = from;
+                this.to = to;
+                this.weight = weight;
+                this.color = 'edge-line';
+            }
+        }
+
+        function init() {
+            setupEventListeners();
+            setupCanvasInteraction();
+            initializeGraph();
+            render();
+            updateInfo();
+        }
+
+        function setupEventListeners() {
+            document.getElementById('graphType').addEventListener('change', function() {
+                state.graphType = this.value;
+                updateInfo();
+            });
+            
+            document.getElementById('addNodeBtn').addEventListener('click', addNode);
+            document.getElementById('addEdgeBtn').addEventListener('click', addEdge);
+            document.getElementById('clearGraphBtn').addEventListener('click', clearGraph);
+            document.getElementById('randomGraphBtn').addEventListener('click', generateRandomGraph);
+            document.getElementById('runAlgoBtn').addEventListener('click', runAlgorithm);
+            
+            document.getElementById('speedSlider').addEventListener('input', function() {
+                state.speed = parseInt(this.value);
+            });
+            
+            document.getElementById('nodeLabel').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addNode();
+            });
+            
+            document.getElementById('edgeFrom').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addEdge();
+            });
+            
+            document.getElementById('edgeTo').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') addEdge();
+            });
+        }
+
+        function setupCanvasInteraction() {
+            canvas.addEventListener('wheel', handleWheel);
+            canvas.addEventListener('mousedown', handleCanvasMouseDown);
+            canvas.addEventListener('mousemove', handleCanvasMouseMove);
+            canvas.addEventListener('mouseup', handleCanvasMouseUp);
+            canvas.addEventListener('mouseleave', handleCanvasMouseUp);
+        }
+
+        function handleWheel(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            state.zoom *= delta;
+            state.zoom = Math.max(0.5, Math.min(3, state.zoom));
+            render();
+        }
+
+        function handleCanvasMouseDown(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / state.zoom - state.offsetX;
+            const y = (e.clientY - rect.top) / state.zoom - state.offsetY;
+            
+            // Check if clicking on a node
+            for (const node of state.graph.nodes) {
+                const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+                if (distance <= node.radius) {
+                    state.isDraggingNode = true;
+                    state.dragNode = node;
+                    state.dragStartX = x;
+                    state.dragStartY = y;
+                    state.selectedNode = node;
+                    selectedNode.textContent = `Selected: ${node.id}`;
+                    return;
+                }
+            }
+            
+            // Otherwise, start canvas dragging
+            state.isDraggingCanvas = true;
+            state.dragStartCanvasX = e.clientX;
+            state.dragStartCanvasY = e.clientY;
+            state.startOffsetX = state.offsetX;
+            state.startOffsetY = state.offsetY;
+            canvas.style.cursor = 'grabbing';
+        }
+
+        function handleCanvasMouseMove(e) {
+            if (state.isDraggingNode && state.dragNode) {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / state.zoom - state.offsetX;
+                const y = (e.clientY - rect.top) / state.zoom - state.offsetY;
+                
+                // Update node position
+                state.dragNode.x = Math.max(state.dragNode.radius, Math.min(state.canvasWidth - state.dragNode.radius, x));
+                state.dragNode.y = Math.max(state.dragNode.radius, Math.min(state.canvasHeight - state.dragNode.radius, y));
+                
+                render();
+            } else if (state.isDraggingCanvas) {
+                const dx = e.clientX - state.dragStartCanvasX;
+                const dy = e.clientY - state.dragStartCanvasY;
+                
+                state.offsetX = state.startOffsetX + dx;
+                state.offsetY = state.startOffsetY + dy;
+                
+                render();
+            }
+        }
+
+        function handleCanvasMouseUp() {
+            state.isDraggingNode = false;
+            state.dragNode = null;
+            state.isDraggingCanvas = false;
+            canvas.style.cursor = 'default';
+        }
+
+        function initializeGraph() {
+            // Create a sample graph
+            state.graph.nodes = [
+                new GraphNode('A', 200, 150),
+                new GraphNode('B', 400, 100),
+                new GraphNode('C', 600, 150),
+                new GraphNode('D', 300, 300),
+                new GraphNode('E', 500, 300),
+                new GraphNode('F', 700, 250)
+            ];
+            
+            state.graph.edges = [
+                new GraphEdge('A', 'B', 4),
+                new GraphEdge('A', 'D', 1),
+                new GraphEdge('B', 'C', 2),
+                new GraphEdge('B', 'E', 3),
+                new GraphEdge('C', 'F', 5),
+                new GraphEdge('D', 'E', 2),
+                new GraphEdge('E', 'F', 1)
+            ];
+            
+            updateAdjacency();
+            updateStats();
+        }
+
+        function addNode() {
+            const labelInput = document.getElementById('nodeLabel');
+            const label = labelInput.value.trim().toUpperCase();
+            
+            if (!label) {
+                updateStatus('Please enter a node label');
+                return;
+            }
+            
+            // Check if node already exists
+            if (state.graph.nodes.some(node => node.id === label)) {
+                updateStatus(`Node ${label} already exists`);
+                return;
+            }
+            
+            // Add node at random position
+            const x = Math.random() * (state.canvasWidth - 100) + 50;
+            const y = Math.random() * (state.canvasHeight - 100) + 50;
+            const newNode = new GraphNode(label, x, y);
+            state.graph.nodes.push(newNode);
+            
+            updateAdjacency();
+            updateStats();
+            updateStatus(`Added node ${label}`);
+            updateAction(`Added node ${label}`);
+            
+            // Clear input
+            labelInput.value = '';
+            labelInput.focus();
+            
+            render();
+        }
+
+        function addEdge() {
+            const fromInput = document.getElementById('edgeFrom');
+            const toInput = document.getElementById('edgeTo');
+            const weightInput = document.getElementById('edgeWeight');
+            
+            const from = fromInput.value.trim().toUpperCase();
+            const to = toInput.value.trim().toUpperCase();
+            const weight = parseInt(weightInput.value) || 1;
+            
+            if (!from || !to) {
+                updateStatus('Please enter both from and to nodes');
+                return;
+            }
+            
+            // Check if nodes exist
+            const fromNode = state.graph.nodes.find(n => n.id === from);
+            const toNode = state.graph.nodes.find(n => n.id === to);
+            
+            if (!fromNode || !toNode) {
+                updateStatus('One or both nodes do not exist');
+                return;
+            }
+            
+            // Check if edge already exists
+            const edgeExists = state.graph.edges.some(edge => 
+                (edge.from === from && edge.to === to) || 
+                (state.graphType === 'undirected' && edge.from === to && edge.to === from)
+            );
+            
+            if (edgeExists) {
+                updateStatus(`Edge between ${from} and ${to} already exists`);
+                return;
+            }
+            
+            // Add edge
+            const newEdge = new GraphEdge(from, to, weight);
+            state.graph.edges.push(newEdge);
+            
+            updateAdjacency();
+            updateStats();
+            updateStatus(`Added edge ${from} - ${to} (weight: ${weight})`);
+            updateAction(`Added edge ${from}-${to}`);
+            
+            // Clear inputs
+            fromInput.value = '';
+            toInput.value = '';
+            weightInput.value = '1';
+            fromInput.focus();
+            
+            render();
+        }
+
+        function clearGraph() {
+            state.graph.nodes = [];
+            state.graph.edges = [];
+            state.graph.adjacency = {};
+            state.highlightedNodes.clear();
+            state.visitedNodes.clear();
+            state.pathNodes.clear();
+            state.pathEdges.clear();
+            state.selectedNode = null;
+            state.startNode = null;
+            
+            updateStats();
+            updateStatus('Graph cleared');
+            updateAction('Cleared graph');
+            selectedNode.textContent = 'Selected: None';
+            
+            render();
+        }
+
+        function generateRandomGraph() {
+            state.graph.nodes = [];
+            state.graph.edges = [];
+            state.graph.adjacency = {};
+            
+            // Generate 6-10 random nodes
+            const nodeCount = Math.floor(Math.random() * 5) + 6;
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            
+            for (let i = 0; i < nodeCount; i++) {
+                const x = Math.random() * (state.canvasWidth - 100) + 50;
+                const y = Math.random() * (state.canvasHeight - 100) + 50;
+                const node = new GraphNode(letters[i], x, y);
+                state.graph.nodes.push(node);
+            }
+            
+            // Generate random edges
+            const maxEdges = Math.min(nodeCount * 2, nodeCount * (nodeCount - 1) / 2);
+            const edgeCount = Math.floor(Math.random() * (maxEdges - nodeCount + 1)) + nodeCount;
+            
+            for (let i = 0; i < edgeCount; i++) {
+                const fromIdx = Math.floor(Math.random() * nodeCount);
+                let toIdx = Math.floor(Math.random() * nodeCount);
+                
+                // Ensure different nodes
+                while (toIdx === fromIdx) {
+                    toIdx = Math.floor(Math.random() * nodeCount);
+                }
+                
+                const from = letters[fromIdx];
+                const to = letters[toIdx];
+                const weight = Math.floor(Math.random() * 9) + 1;
+                
+                const edgeExists = state.graph.edges.some(edge => 
+                    (edge.from === from && edge.to === to) || 
+                    (state.graphType === 'undirected' && edge.from === to && edge.to === from)
+                );
+                
+                if (!edgeExists) {
+                    state.graph.edges.push(new GraphEdge(from, to, weight));
+                }
+            }
+            
+            updateAdjacency();
+            updateStats();
+            updateStatus(`Generated random graph with ${nodeCount} nodes and ${state.graph.edges.length} edges`);
+            updateAction('Generated random graph');
+            
+            render();
+        }
+
+        function updateAdjacency() {
+            state.graph.adjacency = {};
+            
+            for (const node of state.graph.nodes) {
+                state.graph.adjacency[node.id] = [];
+            }
+            
+            for (const edge of state.graph.edges) {
+                state.graph.adjacency[edge.from].push({
+                    node: edge.to,
+                    weight: edge.weight
+                });
+                
+                if (state.graphType === 'undirected') {
+                    state.graph.adjacency[edge.to].push({
+                        node: edge.from,
+                        weight: edge.weight
+                    });
+                }
+            }
+        }
+
+        function updateStats() {
+            const nodeCount = state.graph.nodes.length;
+            const edgeCount = state.graph.edges.length;
+            
+            graphStats.textContent = `Nodes: ${nodeCount} | Edges: ${edgeCount}`;
+            graphTypeInfo.textContent = `Type: ${state.graphType.charAt(0).toUpperCase() + state.graphType.slice(1)}`;
+        }
+
+        async function runAlgorithm() {
+            if (state.isAnimating) return;
+            
+            const algo = document.getElementById('algoSelect').value;
+            const startNodeInput = document.getElementById('startNode');
+            const startNode = startNodeInput.value.trim().toUpperCase();
+            
+            if (!algo) {
+                updateStatus('Please select an algorithm first');
+                return;
+            }
+            
+            if (!state.graph.nodes.some(n => n.id === startNode)) {
+                updateStatus(`Start node ${startNode} does not exist`);
+                return;
+            }
+            
+            state.isAnimating = true;
+            state.highlightedNodes.clear();
+            state.visitedNodes.clear();
+            state.pathNodes.clear();
+            state.pathEdges.clear();
+            state.startNode = startNode;
+            
+            updateStatus(`Running ${getAlgoName(algo)} from node ${startNode}...`);
+            algorithmStatus.textContent = `Running ${getAlgoName(algo)}`;
+            
+            try {
+                switch(algo) {
+                    case 'bfs': await bfs(startNode); break;
+                    case 'dfs': await dfs(startNode); break;
+                    case 'prim': await prim(startNode); break;
+                    case 'kruskal': await kruskal(); break;
+                }
+            } catch (error) {
+                console.error('Algorithm error:', error);
+                updateStatus('Error running algorithm');
+            }
+            
+            state.isAnimating = false;
+            state.highlightedNodes.clear(); // Clear yellow highlighting after algorithm completes
+            updateStatus(`${getAlgoName(algo)} completed`);
+            algorithmStatus.textContent = 'Ready';
+            updateAction(`Ran ${getAlgoName(algo)} from ${startNode}`);
+            render();
+        }
+
+        async function bfs(start) {
+            const visited = new Set();
+            const queue = [start];
+            visited.add(start);
+            
+            while (queue.length > 0) {
+                const current = queue.shift();
+                
+                state.highlightedNodes.add(current);
+                state.visitedNodes.add(current);
+                render();
+                await sleep(state.speed);
+                
+                state.highlightedNodes.delete(current); // Remove yellow after processing
+                
+                for (const neighbor of state.graph.adjacency[current] || []) {
+                    if (!visited.has(neighbor.node)) {
+                        visited.add(neighbor.node);
+                        queue.push(neighbor.node);
+                        
+                        // Highlight edge
+                        const edgeKey = `${current}-${neighbor.node}`;
+                        const reverseKey = `${neighbor.node}-${current}`;
+                        state.pathEdges.add(edgeKey);
+                        state.pathEdges.add(reverseKey);
+                        render();
+                        await sleep(state.speed / 2);
+                    }
+                }
+            }
+        }
+
+        async function dfs(start) {
+            const visited = new Set();
+            await dfsRecursive(start, visited);
+        }
+
+        async function dfsRecursive(node, visited) {
+            visited.add(node);
+            
+            state.highlightedNodes.add(node);
+            state.visitedNodes.add(node);
+            render();
+            await sleep(state.speed);
+            
+            state.highlightedNodes.delete(node); // Remove yellow after processing
+            
+            for (const neighbor of state.graph.adjacency[node] || []) {
+                if (!visited.has(neighbor.node)) {
+                    const edgeKey = `${node}-${neighbor.node}`;
+                    const reverseKey = `${neighbor.node}-${node}`;
+                    state.pathEdges.add(edgeKey);
+                    state.pathEdges.add(reverseKey);
+                    render();
+                    await sleep(state.speed / 2);
+                    
+                    await dfsRecursive(neighbor.node, visited);
+                }
+            }
+        }
+
+        async function prim(start) {
+            const visited = new Set([start]);
+            const mstEdges = [];
+            
+            while (visited.size < state.graph.nodes.length) {
+                let minEdge = null;
+                let minWeight = Infinity;
+                
+                for (const node of visited) {
+                    for (const neighbor of state.graph.adjacency[node] || []) {
+                        if (!visited.has(neighbor.node) && neighbor.weight < minWeight) {
+                            minWeight = neighbor.weight;
+                            minEdge = { from: node, to: neighbor.node, weight: neighbor.weight };
+                        }
+                    }
+                }
+                
+                if (!minEdge) break;
+                
+                visited.add(minEdge.to);
+                mstEdges.push(minEdge);
+                
+                state.highlightedNodes.add(minEdge.from);
+                state.highlightedNodes.add(minEdge.to);
+                state.visitedNodes.add(minEdge.from);
+                state.visitedNodes.add(minEdge.to);
+                
+                render();
+                await sleep(state.speed);
+                
+                state.highlightedNodes.delete(minEdge.from);
+                state.highlightedNodes.delete(minEdge.to);
+                
+                const edgeKey = `${minEdge.from}-${minEdge.to}`;
+                const reverseKey = `${minEdge.to}-${minEdge.from}`;
+                state.pathEdges.add(edgeKey);
+                state.pathEdges.add(reverseKey);
+                state.pathNodes.add(minEdge.from);
+                state.pathNodes.add(minEdge.to);
+                
+                render();
+                await sleep(state.speed / 2);
+            }
+            
+            const totalWeight = mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+            updateStatus(`Prim's MST complete. Total weight: ${totalWeight}`);
+        }
+
+        async function kruskal() {
+            // Simplified Kruskal's algorithm
+            const edges = [...state.graph.edges].sort((a, b) => a.weight - b.weight);
+            const parent = {};
+            const mstEdges = [];
+            
+            for (const node of state.graph.nodes) {
+                parent[node.id] = node.id;
+            }
+            
+            function find(x) {
+                if (parent[x] !== x) {
+                    parent[x] = find(parent[x]);
+                }
+                return parent[x];
+            }
+            
+            function union(x, y) {
+                const rootX = find(x);
+                const rootY = find(y);
+                if (rootX !== rootY) {
+                    parent[rootY] = rootX;
+                    return true;
+                }
+                return false;
+            }
+            
+            for (const edge of edges) {
+                if (union(edge.from, edge.to)) {
+                    mstEdges.push(edge);
+                    
+                    state.highlightedNodes.add(edge.from);
+                    state.highlightedNodes.add(edge.to);
+                    state.visitedNodes.add(edge.from);
+                    state.visitedNodes.add(edge.to);
+                    
+                    render();
+                    await sleep(state.speed);
+                    
+                    state.highlightedNodes.delete(edge.from);
+                    state.highlightedNodes.delete(edge.to);
+                    
+                    const edgeKey = `${edge.from}-${edge.to}`;
+                    const reverseKey = `${edge.to}-${edge.from}`;
+                    state.pathEdges.add(edgeKey);
+                    state.pathEdges.add(reverseKey);
+                    state.pathNodes.add(edge.from);
+                    state.pathNodes.add(edge.to);
+                    
+                    render();
+                    await sleep(state.speed / 2);
+                    
+                    if (mstEdges.length === state.graph.nodes.length - 1) break;
+                }
+            }
+            
+            const totalWeight = mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+            updateStatus(`Kruskal's MST complete. Total weight: ${totalWeight}`);
+        }
+
+        function render() {
+            canvas.innerHTML = '';
+            
+            const container = document.createElement('div');
+            container.style.width = `${state.canvasWidth}px`;
+            container.style.height = `${state.canvasHeight}px`;
+            container.style.transform = `scale(${state.zoom}) translate(${state.offsetX}px, ${state.offsetY}px)`;
+            container.style.transformOrigin = '0 0';
+            container.style.transition = state.isDraggingCanvas ? 'none' : 'transform 0.1s';
+            
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+            
+            // Create arrowhead definitions
+            const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            
+            // Normal arrowhead for directed graphs
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.setAttribute('id', 'arrowhead');
+            marker.setAttribute('markerWidth', '10');
+            marker.setAttribute('markerHeight', '7');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '3.5');
+            marker.setAttribute('orient', 'auto');
+            
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+            polygon.setAttribute('class', 'arrowhead');
+            
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            
+            // Highlighted arrowhead for path edges
+            const markerHighlight = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            markerHighlight.setAttribute('id', 'arrowhead-highlight');
+            markerHighlight.setAttribute('markerWidth', '10');
+            markerHighlight.setAttribute('markerHeight', '7');
+            markerHighlight.setAttribute('refX', '9');
+            markerHighlight.setAttribute('refY', '3.5');
+            markerHighlight.setAttribute('orient', 'auto');
+            
+            const polygonHighlight = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygonHighlight.setAttribute('points', '0 0, 10 3.5, 0 7');
+            polygonHighlight.setAttribute('class', 'arrowhead-highlight');
+            
+            markerHighlight.appendChild(polygonHighlight);
+            defs.appendChild(markerHighlight);
+            
+            svg.appendChild(defs);
+            
+            // Draw edges first (so they appear behind nodes)
+            for (const edge of state.graph.edges) {
+                const fromNode = state.graph.nodes.find(n => n.id === edge.from);
+                const toNode = state.graph.nodes.find(n => n.id === edge.to);
+                
+                if (fromNode && toNode) {
+                    // Calculate edge direction for arrow placement
+                    const dx = toNode.x - fromNode.x;
+                    const dy = toNode.y - fromNode.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const normX = dx / distance;
+                    const normY = dy / distance;
+                    
+                    // Adjust start and end points to account for node radius
+                    const startX = fromNode.x + normX * fromNode.radius;
+                    const startY = fromNode.y + normY * fromNode.radius;
+                    const endX = toNode.x - normX * toNode.radius;
+                    const endY = toNode.y - normY * toNode.radius;
+                    
+                    // Draw edge line
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', endX);
+                    line.setAttribute('y2', endY);
+                    
+                    const edgeKey = `${edge.from}-${edge.to}`;
+                    const reverseKey = `${edge.to}-${edge.from}`;
+                    
+                    if (state.pathEdges.has(edgeKey) || state.pathEdges.has(reverseKey)) {
+                        line.setAttribute('class', 'edge-highlight');
+                        if (state.graphType === 'directed') {
+                            line.setAttribute('marker-end', 'url(#arrowhead-highlight)');
+                        }
+                    } else {
+                        line.setAttribute('class', 'edge-line');
+                        if (state.graphType === 'directed') {
+                            line.setAttribute('marker-end', 'url(#arrowhead)');
+                        }
+                    }
+                    
+                    svg.appendChild(line);
+                    
+                    // Edge weight text
+                    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    const midX = (startX + endX) / 2;
+                    const midY = (startY + endY) / 2;
+                    
+                    // Adjust text position to avoid overlapping with arrow
+                    let textX = midX;
+                    let textY = midY - 10;
+                    
+                    if (state.graphType === 'directed') {
+                        // Position text a bit further from the arrow
+                        const offsetX = -normY * 15;
+                        const offsetY = normX * 15;
+                        textX = midX + offsetX;
+                        textY = midY + offsetY;
+                    }
+                    
+                    text.setAttribute('x', textX);
+                    text.setAttribute('y', textY);
+                    text.setAttribute('class', 'edge-text');
+                    text.textContent = edge.weight;
+                    svg.appendChild(text);
+                }
+            }
+            
+            // Draw nodes
+            for (const node of state.graph.nodes) {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', node.x);
+                circle.setAttribute('cy', node.y);
+                circle.setAttribute('r', node.radius);
+                circle.setAttribute('class', 'node-circle');
+                
+                // Determine node color based on state
+                if (node.id === state.startNode) {
+                    circle.classList.add('node-start');
+                } else if (state.highlightedNodes.has(node.id)) {
+                    circle.classList.add('node-highlight');
+                } else if (state.pathNodes.has(node.id)) {
+                    circle.classList.add('node-path');
+                } else if (state.visitedNodes.has(node.id)) {
+                    circle.classList.add('node-visited');
+                } else {
+                    circle.classList.add('node-graph');
+                }
+                
+                if (state.selectedNode === node) {
+                    circle.setAttribute('stroke', 'var(--accent-purple)');
+                    circle.setAttribute('stroke-width', '3');
+                }
+                
+                svg.appendChild(circle);
+                
+                // Node label
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', node.x);
+                text.setAttribute('y', node.y);
+                text.setAttribute('class', 'node-text');
+                text.textContent = node.id;
+                svg.appendChild(text);
+            }
+            
+            container.appendChild(svg);
+            canvas.appendChild(container);
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+
+        function updateAction(text) {
+            actionText.textContent = `Last action: ${text}`;
+        }
+
+        function updateInfo() {
+            const info = {
+                'undirected': 'Undirected Graph: Edges have no direction. A-B is same as B-A.',
+                'directed': 'Directed Graph: Edges have direction. A→B is different from B→A.'
+            };
+            infoText.textContent = info[state.graphType] || 'Graph: Collection of vertices (nodes) connected by edges.';
+            
+            
+            complexityText.textContent = complexity[state.graphType] || 'BFS/DFS: O(V+E)';
+        }
+
+        function getAlgoName(algo) {
+            const names = {
+                'bfs': 'Breadth-First Search',
+                'dfs': 'Depth-First Search',
+                'prim': 'Prim\'s Algorithm',
+                'kruskal': 'Kruskal\'s Algorithm'
+            };
+            return names[algo] || algo;
+        }
+
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
